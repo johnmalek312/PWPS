@@ -95,7 +95,7 @@ namespace PixelWorldsServer2.World
             cObj["PosY"] = c.posY;
             cObj["IsGem"] = c.gemType > -1;
             cObj["GemType"] = c.gemType < 0 ? 0 : c.gemType;
-            
+
             collectables[cId] = c;
 
             Broadcast(ref cObj);
@@ -139,7 +139,7 @@ namespace PixelWorldsServer2.World
         public void Save()
         {
             string path = $"maps/{WorldName}.map";
-            
+
             using (MemoryStream ms = new MemoryStream())
             {
                 ms.WriteByte(0x1); // version
@@ -148,6 +148,67 @@ namespace PixelWorldsServer2.World
                 for (int y = 0; y < GetSizeY(); y++)
                 {
                     for (int x = 0; x < GetSizeX(); x++)
+                    {
+                        var tile = GetTile(x, y);
+
+                        ms.Write(BitConverter.GetBytes(tile.fg.id));
+                        ms.Write(BitConverter.GetBytes(tile.bg.id));
+                        ms.Write(BitConverter.GetBytes(tile.water.id));
+                        ms.Write(BitConverter.GetBytes(tile.wire.id));
+                    }
+                }
+
+                ms.Write(BitConverter.GetBytes(collectables.Values.Count));
+                for (int i = 0; i < collectables.Values.Count; i++)
+                {
+                    var col = collectables.ElementAt(i).Value;
+                    ms.Write(BitConverter.GetBytes(col.item));
+                    ms.Write(BitConverter.GetBytes(col.amt));
+                    ms.Write(BitConverter.GetBytes(col.posX));
+                    ms.Write(BitConverter.GetBytes(col.posY));
+                    ms.Write(BitConverter.GetBytes(col.gemType));
+                }
+
+                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
+                SpinWait.SpinUntil(() => Util.IsFileReady(path));
+            }
+        }
+        public void SaveFromBSON(BSONObject bobj)
+        {
+            int worldsizeX = bobj["WorldSizeSettingsType"]["WorldSizeX"].int32Value;
+            int worldsizeY = bobj["WorldSizeSettingsType"]["WorldSizeY"].int32Value;
+            string path = $"maps/{WorldName}.map";
+            WorldTile[,] tilos = new WorldTile[worldsizeX, worldsizeY];
+            int tileLen = tilos.Length;
+
+            int pos = 0;
+            for (int i = 0; i < tileLen; i++)
+            {
+                int x = i % worldsizeX;
+                int y = i / worldsizeX;
+
+                short blockId = BitConverter.ToInt16(bobj["BlockLayer"], pos);
+                short backgroundId = BitConverter.ToInt16(bobj["BackgroundLayer"], pos);
+                short waterId = BitConverter.ToInt16(bobj["WaterLayer"], pos);
+                short wiringId = BitConverter.ToInt16(bobj["WiringLayer"], pos);
+
+                WorldTile tile = new WorldTile();
+                tile.fg.id = blockId;
+                tile.bg.id = backgroundId;
+                tile.water.id = waterId;
+                tile.wire.id = wiringId;
+
+                tilos[x, y] = tile;
+
+                pos += 2;
+            }
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.WriteByte(0x1); // version
+                ms.Write(BitConverter.GetBytes(0));
+                for (int y = 0; y < worldsizeY; y++)
+                {
+                    for (int x = 0; x < worldsizeX; x++)
                     {
                         var tile = GetTile(x, y);
 
@@ -332,6 +393,42 @@ namespace PixelWorldsServer2.World
 
             return wObj;
         }
+
+        public BSONObject ConvertToWorkableBSON(BSONObject nObj, string WorldName)
+        {
+            BSONObject wObj = new BSONObject();
+            wObj[MsgLabels.MessageID] = MsgLabels.Ident.GetWorld;
+            wObj["World"] = WorldName;
+            wObj["BlockLayer"] = nObj["BlockLayer"];
+            wObj["BackgroundLayer"] = nObj["BackgroundLayer"];
+            wObj["WaterLayer"] = nObj["WaterLayer"];
+            wObj["WiringLayer"] = nObj["WiringLayer"];
+            wObj["BlockLayerHits"] = nObj["BlockLayerHits"];
+            wObj["BackgroundLayerHits"] = nObj["BackgroundLayerHits"];
+            wObj["WaterLayerHits"] = nObj["WaterLayerHits"];
+            wObj["WiringLayerHits"] = nObj["WiringLayerHits"];
+            wObj["WorldLayoutType"] = nObj["WorldLayoutType"];
+            wObj["WorldBackgroundType"] = nObj["WorldBackgroundType"];
+            wObj["WorldMusicIndex"] = nObj["WorldMusicIndex"];
+            wObj["WorldStartPoint"] = nObj["WorldStartPoint"];
+            wObj["WorldSizeSettings"] = nObj["WorldSizeSettings"];
+            wObj["WorldRatingsKey"] = nObj["WorldRatingsKey"];
+            wObj["WorldItemId"] = nObj["WorldItemId"];
+            wObj["InventoryId"] = nObj["InventoryId"];
+            wObj["RatingBoardCountKey"] = nObj["RatingBoardCountKey"];
+            wObj["QuestStarterItemSummerCountKey"] = nObj["QuestStarterItemSummerCountKey"];
+            wObj["WorldRaceScoresKey"] = nObj["WorldRaceScoresKey"];
+            wObj["WorldTagKey"] = nObj["WorldTagKey"];
+            wObj["PlayerMaxDeathsCountKey"] = nObj["PlayerMaxDeathsCountKey"];
+            wObj["RatingBoardDateTimeKey"] = nObj["RatingBoardDateTimeKey"];
+            wObj["WorldLightingType"] = nObj["WorldLightingType"];
+            wObj["WorldWeatherType"] = nObj["WorldWeatherType"];
+            wObj["WorldItems"] = nObj["WorldItems"];
+            wObj["PlantedSeeds"] = nObj["PlantedSeeds"];
+            wObj["Collectables"] = nObj["Collectables"];
+            return wObj;
+        }
+
 
         public void Deserialize(byte[] binary)
         {

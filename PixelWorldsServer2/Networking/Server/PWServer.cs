@@ -123,6 +123,59 @@ namespace PixelWorldsServer2.Networking.Server
 
            
         }
+        private static void GetWorldThread(object obj)
+        {
+            object[] parameters = (object[])obj;
+            RealPW.Client getWorldClient = (RealPW.Client)parameters[0];
+            getWorldClient.GetWorldData((string)parameters[1]);
+        }
+
+        [Obsolete]
+        private void HandleConsoleCloneWorld(string WorldName)
+        {
+            if(!SQLiteManager.HasIllegalChar(WorldName))
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Please wait while the server clones world data.");
+                Console.ForegroundColor = ConsoleColor.White;
+                RealPW.Client getWorldClient = new RealPW.Client();
+                Thread newThread = new Thread(new ParameterizedThreadStart(GetWorldThread));
+                object[] parameters = { getWorldClient, WorldName};
+                newThread.Start(parameters);
+                int timeWaited = 0;
+                while((getWorldClient.taskStatus != "Finished" && getWorldClient.taskStatus != "Failed"))
+                {
+                    Thread.Sleep(3000);
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine("Stay patience while we clone world.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    timeWaited = timeWaited + 3000;
+                    if (timeWaited > 20000)
+                    {
+                        break;
+                    }
+                }
+                if(getWorldClient.taskStatus == "Finished")
+                {
+                    MessageHandler.ReadBSON(getWorldClient.WorldData);
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Failed to clone world, try again or fix code.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                RealPW.Client.TCP.stream.Close();
+                RealPW.Client.TCP.socket.Close();
+                newThread.Suspend();
+            }
+            else
+            {
+                Util.Log("World name has invalid character(s).");
+            }
+
+            //44.194.163.69
+        }
         private void HandleConsoleSetRank(uint userID, Ranks rankType)
         {
             // duration is in secs here...
@@ -234,13 +287,16 @@ namespace PixelWorldsServer2.Networking.Server
                                 HandleConsoleGiveGems(uint.Parse(cmd[1]), int.Parse(cmd[2]));
 
                             break;
-
+                        case "cloneworld":
+                            if (cmd.Length > 1)
+                                HandleConsoleCloneWorld(cmd[1]);
+                            break;
                         default:
                             Util.Log("Unknown command. Type 'help' for a list of commands.");
                             break;
                     }
                 }
-                catch { Util.Log("Invalid arguments!"); }
+                catch(Exception e) { Util.Log("Invalid arguments!"); Console.WriteLine(e); }
             }
         }
 

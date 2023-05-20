@@ -9,6 +9,7 @@ namespace PixelWorldsServer2
 {
     class Program
     {
+        public static PWServer pwServer = null;
         [Obsolete]
         static void Main(string[] args)
         {
@@ -39,7 +40,7 @@ namespace PixelWorldsServer2
 
             }
 
-            PWServer pwServer = new PWServer(port);
+            pwServer = new PWServer(port);
             Util.StartLogger(pwServer);
 
             Util.Log("Checking SQLite db...");

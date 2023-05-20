@@ -39,10 +39,10 @@ namespace PixelWorldsServer2.Networking.Server
 
 #endif
             int messageCount = bObj["mc"];
-            if(messageCount == 0)
-            {
-                Util.LogClient("Empty ping.");
-            }
+            //if(messageCount == 0)
+            //{
+            //    Util.LogClient("Empty ping.");
+            //}
             Player p = client.data == null ? null : ((Player.PlayerData)client.data).player;
             for (int i = 0; i < messageCount; i++)
             {
@@ -1500,7 +1500,9 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 try
                 {
+                    
                     BSONValue Packet = SinglePacket[Key];
+                    if(Key == "ID" && Packet.stringValue == "p")return;
                     switch (Packet.valueType)
                     {
                         case BSONValue.ValueType.String:
