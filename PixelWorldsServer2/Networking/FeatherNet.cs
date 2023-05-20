@@ -77,8 +77,6 @@ namespace FeatherNet
             {
                 var ns = client.GetStream();
                 ns.EndWrite(i);
-
-                areWeSending = false;
             }
             catch (ArgumentNullException) { }
             catch (IOException) { }
@@ -182,6 +180,7 @@ namespace FeatherNet
         public bool areWeSending = false;
 
         public bool CanFlush() => outgoingPackets.Count > 0 && areWeSending;
+        public object sendLock = new object();
 
         public void Flush()
         {
@@ -193,9 +192,10 @@ namespace FeatherNet
 
             try
             {
+                
                 var ns = client.GetStream();
 
-                if (ns.CanWrite && outgoingPackets.Count > 0)
+                if (ns.CanWrite && outgoingPackets.Count > 0 && areWeSending)
                 {
                     // Serialize all bson objects into a single one:
 
@@ -203,6 +203,7 @@ namespace FeatherNet
 
                     for (int i = 0; i < outgoingPackets.Count; i++)
                     {
+                        MessageHandler.ReadBSON(outgoingPackets[i]);
                         packet[$"m{i}"] = outgoingPackets[i];
                     }
                     packet["mc"] = outgoingPackets.Count;
@@ -220,13 +221,20 @@ namespace FeatherNet
                         Buffer.BlockCopy(bData, 0, data, 4, bData.Length);
                     else
                         return; // huh? Treat it to be legal just incase anyway...
-
-                    ns.BeginWrite(data, 0, data.Length, OnEndWrite, null);
+                    
+                    lock (sendLock)
+                    {
+                        if (areWeSending)
+                        {
+                            areWeSending = false;
+                            ns.BeginWrite(data, 0, data.Length, OnEndWrite, null);
+                        }
+                    }
                 }
             }
-            catch
+            catch (Exception e)
             {
-
+                Console.WriteLine(e);
             }
         }
 

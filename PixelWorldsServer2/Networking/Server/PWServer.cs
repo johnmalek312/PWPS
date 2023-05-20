@@ -488,7 +488,9 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
 
             msgHandler.ProcessBSONPacket(client, packet);
+            lock(client.sendLock){
             client.areWeSending = true;
+            }
         }
 
         private void OnConnect(FeatherClient client, int flags)

@@ -24,9 +24,13 @@ namespace PixelWorldsServer2
 
     public class Util
     {
+        public enum TextType
+        {
+            server, client, blue,other
+        }
         public static Networking.Server.PWServer staticServer = null;
         private static Thread loggerThread = new Thread(Logger);
-        private static ConcurrentQueue<string> logQueue = new ConcurrentQueue<string>();
+        private static ConcurrentQueue<KeyValuePair<string, TextType>> logQueue = new ConcurrentQueue<KeyValuePair<string, TextType>>();
 
         private static void HandleConsoleInput(string input)
         {
@@ -49,23 +53,37 @@ namespace PixelWorldsServer2
         private static void Logger()
         {
             bool hadOutput = false;
-            string outLog = "";
+            KeyValuePair<string, TextType> outLog;
 
             while (runningLogger)
             {
                 CheckInput();
 
                 string toLog = "";
-
-                while (logQueue.TryDequeue(out outLog))
-                    toLog += "\n" + outLog;
+                List<KeyValuePair<string, TextType>> dict = new List<KeyValuePair<string, TextType>>(); 
+                while (logQueue.TryDequeue(out outLog)){
+                    toLog += "\n" + outLog.Key;
+                    dict.Add(outLog);}
 
                 if (toLog.Length > 0)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop);
                     Console.Write(new String(' ', Console.BufferWidth));
-
-                    Console.WriteLine(toLog);
+                    int first = 1;
+                    foreach(KeyValuePair<string, TextType> key in dict)
+                    {
+                        if (key.Value == TextType.client)Console.ForegroundColor = ConsoleColor.Red;
+                        else if (key.Value == TextType.server)Console.ForegroundColor = ConsoleColor.Green;
+                        else if (key.Value == TextType.blue)Console.ForegroundColor = ConsoleColor.Blue;
+                        if (first==1)
+                        {
+                            first = 0;
+                            Console.WriteLine();
+                        }
+                        Console.WriteLine(key.Key);
+                        Console.ForegroundColor = ConsoleColor.White;
+                        
+                    }
                     File.AppendAllText("log.txt", toLog);
                     Console.Out.Flush();
 
@@ -81,7 +99,7 @@ namespace PixelWorldsServer2
                     Console.Write("Admin Console > ");
                     Console.Out.Flush();
                 }
-              
+
                 Thread.Sleep(50);
             }
         }
@@ -97,7 +115,7 @@ namespace PixelWorldsServer2
             runningLogger = false;
             loggerThread.Join();
         }
-       
+
         public static bool IsFileReady(string filename)
         {
             // If the file can be opened for exclusive access it means that the file
@@ -145,9 +163,16 @@ namespace PixelWorldsServer2
         }
         public static void Log(string text)
         {
-            logQueue.Enqueue("[SERVER at " + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss") + "]: " + text);
+            logQueue.Enqueue(new KeyValuePair<string, TextType>("[SERVER at " + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss") + "]: " + text, TextType.server));
         }
-
+        public static void LogClient(string text)
+        {
+            logQueue.Enqueue(new KeyValuePair<string, TextType>("[CLIENT at " + DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss") + "]: " + text, TextType.client));
+        }
+        public static void EmptyLog(string text)
+        {
+            logQueue.Enqueue(new KeyValuePair<string, TextType>(text, TextType.blue));
+        }
         public static long GetKukouriTime()
         {
             return (DateTime.UtcNow - default(TimeSpan)).Ticks;
@@ -199,7 +224,7 @@ namespace PixelWorldsServer2
                     if (arr.Length < 1)
                         continue;
 
-                    if (arr[0] == key && offset == cur) 
+                    if (arr[0] == key && offset == cur)
                     {
                         return arr.Skip(1).ToArray();
                     }
@@ -223,7 +248,7 @@ namespace PixelWorldsServer2
                     var tCode = Type.GetTypeCode(typeof(T));
                     switch (tCode)
                     {
-                      
+
                         case TypeCode.Double:
                             return (T)(object)double.Parse(v[0]);
 

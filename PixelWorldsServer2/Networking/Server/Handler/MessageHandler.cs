@@ -35,13 +35,14 @@ namespace PixelWorldsServer2.Networking.Server
                 client.DisconnectLater();
                 return; // Invalid Pixel Worlds BSON packet!
             }
-
 #if RELEASE
 
 #endif
             int messageCount = bObj["mc"];
-
-
+            if(messageCount == 0)
+            {
+                Util.LogClient("Empty ping.");
+            }
             Player p = client.data == null ? null : ((Player.PlayerData)client.data).player;
             for (int i = 0; i < messageCount; i++)
             {
@@ -51,16 +52,16 @@ namespace PixelWorldsServer2.Networking.Server
                 BSONObject mObj = bObj[$"m{i}"] as BSONObject;
                 string mID = mObj[MsgLabels.MessageID];
 
-#if DEBUG
-                Util.Log("Got message: " + mID);
-#endif
+//#if DEBUG
+                ReadBSON(mObj, Log:Util.LogClient);
+//#endif
 
                 switch (mID)
                 {
                     case MsgLabels.Ident.VersionCheck:
-#if DEBUG
+///#if DEBUG
                         Util.Log("Client requests version check, responding now...");
-#endif
+//#endif
                         BSONObject resp = new BSONObject();
                         resp[MsgLabels.MessageID] = MsgLabels.Ident.VersionCheck;
                         resp[MsgLabels.VersionNumberKey] = pServer.Version;
@@ -1446,6 +1447,108 @@ namespace PixelWorldsServer2.Networking.Server
             resp[MsgLabels.SequencingInterval] = 60;
 
             client.Send(resp);
+        }
+        private byte[] OnPacket(byte[] revBuffer, String from)
+        {
+            // Remove padding and load the bson.
+            byte[] data = new byte[revBuffer.Length - 4];
+            Buffer.BlockCopy(revBuffer, 4, data, 0, data.Length);
+
+            BSONObject packets = null;
+            try
+            {
+                packets = SimpleBSON.Load(data);
+            }
+            catch { }
+
+            if (packets == null || !packets.ContainsKey("mc"))
+                return revBuffer;
+            Util.Log(from + " ========================================================================================");
+            for (int i = 0; i < packets["mc"]; i++)
+            {
+                BSONObject packet = packets["m" + i] as BSONObject;
+                if (packet["ID"].stringValue == "OoIP")
+                {
+                    Util.Log(packet["IP"].stringValue);
+                    packet["IP"] = "prod.gamev81.portalworldsgame.com";
+                    packet["IP"] = "prod.gamev81.portalworldsgame.com";
+                }
+                ReadBSON(packet);
+
+
+            }
+
+            // Dump the BSON and add padding.
+            MemoryStream memoryStream = new MemoryStream();
+            using (BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+            {
+                byte[] bsonDump = SimpleBSON.Dump(packets);
+
+                binaryWriter.Write(bsonDump.Length + 4);
+                binaryWriter.Write(bsonDump);
+            }
+            return memoryStream.ToArray();
+        }
+        public delegate void LogDelegate(string message);
+
+        public static void ReadBSON(BSONObject SinglePacket, string Parent = "", LogDelegate Log = null)
+        {
+            if (Log == null){
+                Log = Util.Log;
+            }            
+            foreach (string Key in SinglePacket.Keys)
+            {
+                try
+                {
+                    BSONValue Packet = SinglePacket[Key];
+                    switch (Packet.valueType)
+                    {
+                        case BSONValue.ValueType.String:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.stringValue}");
+                            break;
+                        case BSONValue.ValueType.Boolean:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.boolValue}");
+                            break;
+                        case BSONValue.ValueType.Int32:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.int32Value}");
+                            break;
+                        case BSONValue.ValueType.Int64:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.int64Value}");
+                            break;
+                        case BSONValue.ValueType.Binary: // BSONObject
+                            try
+                            {
+                                Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.binaryValue}");
+                                ReadBSON(SimpleBSON.Load(Packet.binaryValue), Key);
+                            }
+                            catch
+                            {
+                                Log($"{Parent} = {Key} | {Packet.valueType} = [{BitConverter.ToString(Packet.binaryValue)}]");
+                            }
+                            break;
+                        case BSONValue.ValueType.Double:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.doubleValue}");
+                            break;
+                        case BSONValue.ValueType.Array:
+                            string bamboom = $"{Parent} = {Key} | {Packet.valueType} = " + "[" + string.Join(", ", Packet.stringListValue) + "]";
+                            Log(bamboom);
+                            break;
+                        case BSONValue.ValueType.UTCDateTime:
+                            Log($"{Parent} = {Key} | {Packet.valueType} = {Packet.dateTimeValue}");
+                            break;
+                        default:
+                            Log($"{Parent} = {Key} | {Packet.valueType}");
+                            ReadBSON((BSONObject)Packet, Key);
+                            //Log(BitConverter.ToString(ObjectToByteArray(((Object)Packet))));
+
+                            break;
+                    }
+                }
+                catch (Exception ee)
+                {
+                    Console.WriteLine(ee);
+                }
+            }
         }
     }
 }
