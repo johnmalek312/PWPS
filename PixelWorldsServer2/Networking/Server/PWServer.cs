@@ -18,7 +18,7 @@ namespace PixelWorldsServer2.Networking.Server
     {
         private readonly Timer tickTimer = new Timer(FeatherDefaults.PING_CLOCK_MS);
         public bool wantsShutdown = false;
-        public int Version = 92;
+        public int Version = 96;
         public int Port; // for quick-accessibility
         private FeatherServer fServer = null;
         private MessageHandler msgHandler = null;
