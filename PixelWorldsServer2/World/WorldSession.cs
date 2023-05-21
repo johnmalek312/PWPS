@@ -173,67 +173,6 @@ namespace PixelWorldsServer2.World
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
             }
         }
-        public void SaveFromBSON(BSONObject bobj)
-        {
-            int worldsizeX = bobj["WorldSizeSettingsType"]["WorldSizeX"].int32Value;
-            int worldsizeY = bobj["WorldSizeSettingsType"]["WorldSizeY"].int32Value;
-            string path = $"maps/{WorldName}.map";
-            WorldTile[,] tilos = new WorldTile[worldsizeX, worldsizeY];
-            int tileLen = tilos.Length;
-
-            int pos = 0;
-            for (int i = 0; i < tileLen; i++)
-            {
-                int x = i % worldsizeX;
-                int y = i / worldsizeX;
-
-                short blockId = BitConverter.ToInt16(bobj["BlockLayer"], pos);
-                short backgroundId = BitConverter.ToInt16(bobj["BackgroundLayer"], pos);
-                short waterId = BitConverter.ToInt16(bobj["WaterLayer"], pos);
-                short wiringId = BitConverter.ToInt16(bobj["WiringLayer"], pos);
-
-                WorldTile tile = new WorldTile();
-                tile.fg.id = blockId;
-                tile.bg.id = backgroundId;
-                tile.water.id = waterId;
-                tile.wire.id = wiringId;
-
-                tilos[x, y] = tile;
-
-                pos += 2;
-            }
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ms.WriteByte(0x1); // version
-                ms.Write(BitConverter.GetBytes(0));
-                for (int y = 0; y < worldsizeY; y++)
-                {
-                    for (int x = 0; x < worldsizeX; x++)
-                    {
-                        var tile = GetTile(x, y);
-
-                        ms.Write(BitConverter.GetBytes(tile.fg.id));
-                        ms.Write(BitConverter.GetBytes(tile.bg.id));
-                        ms.Write(BitConverter.GetBytes(tile.water.id));
-                        ms.Write(BitConverter.GetBytes(tile.wire.id));
-                    }
-                }
-
-                ms.Write(BitConverter.GetBytes(collectables.Values.Count));
-                for (int i = 0; i < collectables.Values.Count; i++)
-                {
-                    var col = collectables.ElementAt(i).Value;
-                    ms.Write(BitConverter.GetBytes(col.item));
-                    ms.Write(BitConverter.GetBytes(col.amt));
-                    ms.Write(BitConverter.GetBytes(col.posX));
-                    ms.Write(BitConverter.GetBytes(col.posY));
-                    ms.Write(BitConverter.GetBytes(col.gemType));
-                }
-
-                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
-                SpinWait.SpinUntil(() => Util.IsFileReady(path));
-            }
-        }
 
         public void SetupTerrain()
         {
@@ -467,7 +406,7 @@ namespace PixelWorldsServer2.World
                 }
             }
 
-            int dropCount = BitConverter.ToInt16(binary, pos); pos += 4;
+            int dropCount = BitConverter.ToInt32(binary, pos); pos += 4;
             for (int i = 0; i < dropCount; i++)
             {
                 Collectable c = new Collectable();

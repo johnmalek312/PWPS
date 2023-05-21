@@ -102,6 +102,7 @@ namespace RealPW
                         if (stateObject.data == null)
                         {
                             ReceiveLength = BitConverter.ToInt32(stateObject.buffer, 0);
+                            Console.WriteLine("Receiving " + ReceiveLength + "bytes, please wait.");
                             stateObject.data = new byte[ReceiveLength - 4];
                             Array.Copy(stateObject.buffer, 4, stateObject.data, 0, _byteLength - 4);
                             stateObject.bytesReadToData = _byteLength - 4;
@@ -110,6 +111,7 @@ namespace RealPW
                         {
                             Array.Copy(stateObject.buffer, 0, stateObject.data, stateObject.bytesReadToData, _byteLength);
                             stateObject.bytesReadToData += _byteLength;
+                            Console.WriteLine("Received " + stateObject.bytesReadToData + "bytes.");
                         }
                         if (stateObject.bytesReadToData == stateObject.data.Length)
                         {
@@ -191,6 +193,7 @@ namespace RealPW
                     {
                         client.WorldData = SimpleBSON.Load(PixelWorldsServer2.Util.LZMAHelper.DecompressLZMA(packet["W"].binaryValue));
                         TCP.stream.Close(0);
+                        TCP.socket.Close();
                         client.taskStatus = "Finished";
                         
                     }

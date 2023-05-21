@@ -11,6 +11,7 @@ using PixelWorldsServer2.Database;
 using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.World;
 using Timer = System.Timers.Timer;
+using System.IO;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -150,7 +151,7 @@ namespace PixelWorldsServer2.Networking.Server
                     Console.WriteLine("Stay patience while we clone world.");
                     Console.ForegroundColor = ConsoleColor.White;
                     timeWaited = timeWaited + 3000;
-                    if (timeWaited > 20000)
+                    if (timeWaited > 120000)
                     {
                         break;
                     }
@@ -158,6 +159,7 @@ namespace PixelWorldsServer2.Networking.Server
                 if(getWorldClient.taskStatus == "Finished")
                 {
                     MessageHandler.ReadBSON(getWorldClient.WorldData);
+                    SaveFromBSON(getWorldClient.WorldData, WorldName);
                 }
                 else
                 {
@@ -175,6 +177,54 @@ namespace PixelWorldsServer2.Networking.Server
             }
 
             //44.194.163.69
+        }
+
+        public static void SaveFromBSON(BSONObject bobj, string WorldName)
+        {
+            int worldsizeX = bobj["WorldSizeSettingsType"]["WorldSizeX"].int32Value;
+            int worldsizeY = bobj["WorldSizeSettingsType"]["WorldSizeY"].int32Value;
+            string path = $"maps/{WorldName}.map";
+            WorldTile[,] tilos = new WorldTile[worldsizeX, worldsizeY];
+            int tileLen = tilos.Length;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.WriteByte(0x1); // version
+                uint ownerid = 0;
+                ms.Write(BitConverter.GetBytes(ownerid));
+
+                int pos = 5;
+                for (int i = 0; i < bobj["BlockLayer"].binaryValue.Length; i = i + 2)
+                {
+                    ms.Write(bobj["BlockLayer"].binaryValue, i, 2);
+                    ms.Write(bobj["BackgroundLayer"].binaryValue, i, 2);
+                    ms.Write(bobj["WaterLayer"].binaryValue, i, 2);
+                    ms.Write(bobj["WiringLayer"].binaryValue, i, 2);
+
+                    pos += 2;
+                }
+                ms.Write(BitConverter.GetBytes(bobj["Collectables"]["Count"].int32Value));
+                for (int i = 0; i < bobj["Collectables"]["Count"].int32Value; i++)
+                {
+                    BSONObject col = (BSONObject)bobj["Collectables"]["C" + i];
+                    ms.Write(BitConverter.GetBytes((Int16)col["BlockType"].int32Value));
+                    ms.Write(BitConverter.GetBytes((Int16)col["Amount"].int32Value));
+                    ms.Write(BitConverter.GetBytes(col["PosX"].doubleValue));
+                    ms.Write(BitConverter.GetBytes(col["PosY"].doubleValue));
+                    short gemType = 0;
+                    if (!col["IsGem"].boolValue)
+                    {
+                        gemType = -1;
+                    }
+                    if(gemType > -1)
+                    {
+                        gemType = (Int16)col["GemType"].int32Value;
+                    }
+                    ms.Write(BitConverter.GetBytes(gemType));
+                }
+                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
+                SpinWait.SpinUntil(() => Util.IsFileReady(path));
+                Console.WriteLine("Saved");
+            }
         }
         private void HandleConsoleSetRank(uint userID, Ranks rankType)
         {
@@ -289,7 +339,7 @@ namespace PixelWorldsServer2.Networking.Server
                             break;
                         case "cloneworld":
                             if (cmd.Length > 1)
-                                HandleConsoleCloneWorld(cmd[1]);
+                                HandleConsoleCloneWorld(cmd[1].ToUpper());
                             break;
                         default:
                             Util.Log("Unknown command. Type 'help' for a list of commands.");
