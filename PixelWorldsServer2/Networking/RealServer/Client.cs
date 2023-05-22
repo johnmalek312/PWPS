@@ -31,7 +31,7 @@ namespace RealPW
         {
             tcp = new TCP(this);
             tcp.Connect();
-            
+
         }
         public void GetWorldData(string WorldName)
         {
@@ -80,7 +80,7 @@ namespace RealPW
                 Packets.Start();
                 Packets.SendMessages();
                 ReceiveLength = stream.Read(receiveBuffer, 0, dataBufferSize);
-                if(client.task == "CloneWorld")
+                if (client.task == "CloneWorld")
                     ReceiveMessageCallbackCloneWorld();
             }
             public static StateObject stateObject = new StateObject();
@@ -184,7 +184,7 @@ namespace RealPW
                     {
                         Packets.EnterWorld(client.WorldName);
                     }
-                    else if((string)packet["ID"]=="TTjW")
+                    else if ((string)packet["ID"] == "TTjW")
                     {
                         Thread.Sleep(200);
                         Packets.EnterWorld2(client.WorldName);
@@ -195,11 +195,18 @@ namespace RealPW
                         TCP.stream.Close(0);
                         TCP.socket.Close();
                         client.taskStatus = "Finished";
-                        
+
                     }
-                    else if((string)packet["ID"] == "OoIP")
+                    else if ((string)packet["ID"] == "OoIP")
                     {
-                        client.taskStatus = "Failed";
+                        IPAddress[] addresslist = Dns.GetHostAddresses(packet["IP"].stringValue);
+                        if (addresslist.Length > 0 && !IsLocalIpAddress(addresslist[0]))
+                        {
+                            Client.ip = addresslist[0].ToString();
+                            stream.Close();
+                            socket.Close();
+                            this.Connect();
+                        }
                     }
 
                 }
@@ -209,6 +216,22 @@ namespace RealPW
                 }
 
 
+            }
+            public static bool IsLocalIpAddress(IPAddress ipAddress)
+            {
+                // Get the local IP addresses of the machine
+                IPAddress[] localIpAddresses = Dns.GetHostAddresses(Dns.GetHostName());
+
+                // Check if the provided IP address matches any of the local IP addresses
+                foreach (IPAddress localIpAddress in localIpAddresses)
+                {
+                    if (IPAddress.Equals(ipAddress, localIpAddress))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
         }

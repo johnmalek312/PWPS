@@ -52,16 +52,16 @@ namespace PixelWorldsServer2.Networking.Server
                 BSONObject mObj = bObj[$"m{i}"] as BSONObject;
                 string mID = mObj[MsgLabels.MessageID];
 
-//#if DEBUG
-                ReadBSON(mObj, Log:Util.LogClient);
-//#endif
+                //#if DEBUG
+                ReadBSON(mObj, Log: Util.LogClient);
+                //#endif
 
                 switch (mID)
                 {
                     case MsgLabels.Ident.VersionCheck:
-///#if DEBUG
+                        ///#if DEBUG
                         Util.Log("Client requests version check, responding now...");
-//#endif
+                        //#endif
                         BSONObject resp = new BSONObject();
                         resp[MsgLabels.MessageID] = MsgLabels.Ident.VersionCheck;
                         resp[MsgLabels.VersionNumberKey] = pServer.Version;
@@ -305,9 +305,10 @@ namespace PixelWorldsServer2.Networking.Server
             pd[MsgLabels.PlayerData.Username] = p.Data.Name.ToUpper();
             pd[MsgLabels.PlayerData.PlayerOPStatus] = (int)p.pSettings.GetHighestRank();
             pd[MsgLabels.PlayerData.InventorySlots] = 400;
-            
-           // pd["experienceAmount"] = 180000;
-           // pd["xpAmount"] = 180000;
+            pd[MsgLabels.PlayerData.PlayerOPStatus] = (int)p.Data.adminStatus;
+
+            // pd["experienceAmount"] = 180000;
+            // pd["xpAmount"] = 180000;
 
             if (p.Data.Inventory.Items.Count == 0)
             {
@@ -616,7 +617,7 @@ namespace PixelWorldsServer2.Networking.Server
                             }
                             else
                             {
-                                
+
                                 if (Shop.ContainsItem(id))
                                 {
                                     res = "This item must be bought!";
@@ -694,7 +695,7 @@ namespace PixelWorldsServer2.Networking.Server
                     if (p.Data.Gems >= s.price)
                     {
                         bObj["IPRs"] = s.items;
-                     
+
                         foreach (var item in s.items)
                         {
                             p.Data.Inventory.Add(new InventoryItem((short)item));
@@ -729,7 +730,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             }
 
-            Util.Log($"Player with userID: { p.Data.UserID.ToString() } is trying to join a world [{pServer.GetPlayersIngameCount()} players online!]...");
+            Util.Log($"Player with userID: {p.Data.UserID.ToString()} is trying to join a world [{pServer.GetPlayersIngameCount()} players online!]...");
 
             BSONObject resp = new BSONObject(MsgLabels.Ident.TryToJoinWorld);
             resp[MsgLabels.JoinResult] = (int)MsgLabels.JR.UNAVAILABLE;
@@ -814,7 +815,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
 
             //p.Send(ref bObj);
-           
+
 
             long kukTime = Util.GetKukouriTime();
             foreach (var player in p.world.Players)
@@ -907,7 +908,7 @@ namespace PixelWorldsServer2.Networking.Server
                     return;
 
                 BSONObject gObj = new BSONObject(MsgLabels.Ident.BroadcastGlobalMessage);
-                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#00FFFF>Broadcast from {p.Data.Name}", p.world.WorldName, p.world.WorldName, 1, 
+                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#00FFFF>Broadcast from {p.Data.Name}", p.world.WorldName, p.world.WorldName, 1,
                    msg);
 
                 pServer.Broadcast(ref gObj);
@@ -973,14 +974,14 @@ namespace PixelWorldsServer2.Networking.Server
             p.world.Broadcast(ref pObj, p);
 
             BSONObject cObj = new BSONObject("WCM");
-            
+
             cObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#00FF00>Credits",
                     p.world.WorldName,
                     p.world.WorldName,
                     1,
                     "PWPS by Bytez, discord.gg/bxF65jx7Vs");
 
-            p.Send(ref cObj);
+            //p.Send(ref cObj);
         }
 
         public void HandleRequestAI(Player p, BSONObject bObj)
@@ -1396,7 +1397,7 @@ namespace PixelWorldsServer2.Networking.Server
             int amount = dObj["Amount"];
 
             var invItem = p.Data.Inventory.Get(blockType);
-            
+
             if (invItem == null)
                 return;
 
@@ -1493,16 +1494,17 @@ namespace PixelWorldsServer2.Networking.Server
 
         public static void ReadBSON(BSONObject SinglePacket, string Parent = "", LogDelegate Log = null)
         {
-            if (Log == null){
+            if (Log == null)
+            {
                 Log = Util.Log;
-            }            
+            }
             foreach (string Key in SinglePacket.Keys)
             {
                 try
                 {
-                    
+
                     BSONValue Packet = SinglePacket[Key];
-                    if(Key == "ID" && Packet.stringValue == "p")return;
+                    if (Key == "ID" && Packet.stringValue == "p") return;
                     switch (Packet.valueType)
                     {
                         case BSONValue.ValueType.String:

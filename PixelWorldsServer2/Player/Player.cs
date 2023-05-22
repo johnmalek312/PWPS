@@ -32,7 +32,16 @@ namespace PixelWorldsServer2
             public PlayerInventory Inventory;
             public double PosX, PosY;
             public int Anim, Dir;
+            public AdminStatus adminStatus;
             public BSONObject BSON;
+        }
+
+        public enum AdminStatus
+        {
+            AdminStatus_None,
+            AdminStatus_Moderator,
+            AdminStatus_Admin,
+            AdminStatus_Influencer
         }
 
         private PlayerData pData; // basically acts like a save, this is not the data that is assigned to the FeatherNet session itself.
@@ -64,7 +73,7 @@ namespace PixelWorldsServer2
                 pData.LastIP = "0.0.0.0";
                 pData.Inventory = new PlayerInventory();
                 pData.BSON = new BSONObject();
-                
+
                 fClient.data = pData; // interlink
             }
         }
@@ -77,7 +86,7 @@ namespace PixelWorldsServer2
             pData.Coins = (int)reader["ByteCoins"];
             pData.Name = (string)reader["Name"];
             pData.LastIP = (string)reader["IP"];
-           
+            pData.adminStatus = (Player.AdminStatus)(Convert.ToInt32((Int64)reader["AdminStatus"]));
 
             object inven = reader["Inventory"];
             byte[] invData = null;
@@ -138,7 +147,7 @@ namespace PixelWorldsServer2
             Send(ref MsgLabels.pingBson);
         }
 
-        public void SetClient(FeatherClient fClient) 
+        public void SetClient(FeatherClient fClient)
         {
             this.fClient = fClient;
 
@@ -208,7 +217,7 @@ namespace PixelWorldsServer2
             cmd.Parameters.AddWithValue("@Settings", pSettings.GetSettings());
             if (Data.BSON == null)
                 Data.BSON = new BSONObject();
-            
+
             cmd.Parameters.AddWithValue("@BSON", SimpleBSON.Dump(Data.BSON));
 
             byte[] invData = Data.Inventory.Serialize();
