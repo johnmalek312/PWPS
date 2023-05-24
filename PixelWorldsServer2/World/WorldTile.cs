@@ -10,6 +10,7 @@ namespace PixelWorldsServer2.World
         Background,
         Water,
         Wiring,
+        Sign,
         Unknown
     }
 

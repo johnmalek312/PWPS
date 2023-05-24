@@ -4,14 +4,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
+using Discord;
+using System.Net.Http;
+using Discord.Webhook;
+using Discord.WebSocket;
 using FeatherNet;
+using Discord.Net;
 using Kernys.Bson;
 using PixelWorldsServer2.Database;
 using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.World;
 using Timer = System.Timers.Timer;
-using System.IO;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -33,6 +39,7 @@ namespace PixelWorldsServer2.Networking.Server
         public MessageHandler GetMessageHandler() => msgHandler;
         public WorldManager GetWorldManager() => worldManager;
         public AccountHelper GetAccountHelper() => accountHelper;
+        DiscordSocketClient _client = new DiscordSocketClient();
 
         // return null if non existent:
         public Player GetPlayerByUserID(uint userID)
@@ -106,6 +113,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (p == null)
             {
                 Util.Log("This user isn't online. (Aborted)");
+
                 return;
             }
 
@@ -122,110 +130,7 @@ namespace PixelWorldsServer2.Networking.Server
                 Util.Log(String.Format("Given {0} Gems to Account {1} (ID: {2})", amount, p.Data.Name, userID));
             }
 
-           
-        }
-        private static void GetWorldThread(object obj)
-        {
-            object[] parameters = (object[])obj;
-            RealPW.Client getWorldClient = (RealPW.Client)parameters[0];
-            getWorldClient.GetWorldData((string)parameters[1]);
-        }
-
-        [Obsolete]
-        private void HandleConsoleCloneWorld(string WorldName)
-        {
-            if(!SQLiteManager.HasIllegalChar(WorldName))
-            {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("Please wait while the server clones world data.");
-                Console.ForegroundColor = ConsoleColor.White;
-                RealPW.Client getWorldClient = new RealPW.Client();
-                Thread newThread = new Thread(new ParameterizedThreadStart(GetWorldThread));
-                object[] parameters = { getWorldClient, WorldName};
-                newThread.Start(parameters);
-                int timeWaited = 0;
-                while((getWorldClient.taskStatus != "Finished" && getWorldClient.taskStatus != "Failed"))
-                {
-                    Thread.Sleep(3000);
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("Stay patience while we clone world.");
-                    Console.ForegroundColor = ConsoleColor.White;
-                    timeWaited = timeWaited + 3000;
-                    if (timeWaited > 120000)
-                    {
-                        break;
                     }
-                }
-                if(getWorldClient.taskStatus == "Finished")
-                {
-                    MessageHandler.ReadBSON(getWorldClient.WorldData);
-                    SaveFromBSON(getWorldClient.WorldData, WorldName);
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Failed to clone world, try again or fix code.");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                RealPW.Client.TCP.stream.Close();
-                RealPW.Client.TCP.socket.Close();
-                newThread.Suspend();
-            }
-            else
-            {
-                Util.Log("World name has invalid character(s).");
-            }
-
-            //44.194.163.69
-        }
-
-        public static void SaveFromBSON(BSONObject bobj, string WorldName)
-        {
-            int worldsizeX = bobj["WorldSizeSettingsType"]["WorldSizeX"].int32Value;
-            int worldsizeY = bobj["WorldSizeSettingsType"]["WorldSizeY"].int32Value;
-            string path = $"maps/{WorldName}.map";
-            WorldTile[,] tilos = new WorldTile[worldsizeX, worldsizeY];
-            int tileLen = tilos.Length;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ms.WriteByte(0x1); // version
-                uint ownerid = 0;
-                ms.Write(BitConverter.GetBytes(ownerid));
-
-                int pos = 5;
-                for (int i = 0; i < bobj["BlockLayer"].binaryValue.Length; i = i + 2)
-                {
-                    ms.Write(bobj["BlockLayer"].binaryValue, i, 2);
-                    ms.Write(bobj["BackgroundLayer"].binaryValue, i, 2);
-                    ms.Write(bobj["WaterLayer"].binaryValue, i, 2);
-                    ms.Write(bobj["WiringLayer"].binaryValue, i, 2);
-
-                    pos += 2;
-                }
-                ms.Write(BitConverter.GetBytes(bobj["Collectables"]["Count"].int32Value));
-                for (int i = 0; i < bobj["Collectables"]["Count"].int32Value; i++)
-                {
-                    BSONObject col = (BSONObject)bobj["Collectables"]["C" + i];
-                    ms.Write(BitConverter.GetBytes((Int16)col["BlockType"].int32Value));
-                    ms.Write(BitConverter.GetBytes((Int16)col["Amount"].int32Value));
-                    ms.Write(BitConverter.GetBytes(col["PosX"].doubleValue));
-                    ms.Write(BitConverter.GetBytes(col["PosY"].doubleValue));
-                    short gemType = 0;
-                    if (!col["IsGem"].boolValue)
-                    {
-                        gemType = -1;
-                    }
-                    if(gemType > -1)
-                    {
-                        gemType = (Int16)col["GemType"].int32Value;
-                    }
-                    ms.Write(BitConverter.GetBytes(gemType));
-                }
-                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
-                SpinWait.SpinUntil(() => Util.IsFileReady(path));
-                Console.WriteLine("Saved");
-            }
-        }
         private void HandleConsoleSetRank(uint userID, Ranks rankType)
         {
             // duration is in secs here...
@@ -243,7 +148,7 @@ namespace PixelWorldsServer2.Networking.Server
                     break;
 
                 case Ranks.INFLUENCER:
-                    p.pSettings.Set(PlayerSettings.Bit.SET_INFLUENCER);
+                    p.pSettings.Set(PlayerSettings.Bit.SET_VIP);
                     break;
 
                 case Ranks.MODERATOR:
@@ -314,7 +219,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                         case "setvip":
                             if (cmd.Length > 1)
-                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.INFLUENCER);
+                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.MODERATOR);
 
                             break;
 
@@ -323,6 +228,14 @@ namespace PixelWorldsServer2.Networking.Server
                                 HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.MODERATOR);
 
                             break;
+
+
+                        case "setplayer":
+                            if (cmd.Length > 1)
+                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.PLAYER);
+
+                            break;
+
 
                         case "setadmin":
 
@@ -337,10 +250,7 @@ namespace PixelWorldsServer2.Networking.Server
                                 HandleConsoleGiveGems(uint.Parse(cmd[1]), int.Parse(cmd[2]));
 
                             break;
-                        case "cloneworld":
-                            if (cmd.Length > 1)
-                                HandleConsoleCloneWorld(cmd[1].ToUpper());
-                            break;
+
                         default:
                             Util.Log("Unknown command. Type 'help' for a list of commands.");
                             break;
@@ -477,8 +387,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if (Util.GetSec() > lastDiscordUpdateTime + 29)
                 {
-                    _ = DiscordBot.UpdateStatus($"Join {playersOn} other players!");
-                    lastDiscordUpdateTime = Util.GetSec();
+
                 }
             }
         }

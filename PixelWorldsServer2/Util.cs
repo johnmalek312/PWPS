@@ -26,7 +26,7 @@ namespace PixelWorldsServer2
     {
         public enum TextType
         {
-            server, client, blue,other
+            server, client, blue, other
         }
         public static Networking.Server.PWServer staticServer = null;
         private static Thread loggerThread = new Thread(Logger);
@@ -61,21 +61,23 @@ namespace PixelWorldsServer2
 
                 string toLog = "";
                 List<KeyValuePair<string, TextType>> dict = new List<KeyValuePair<string, TextType>>(); 
-                while (logQueue.TryDequeue(out outLog)){
+                while (logQueue.TryDequeue(out outLog))
+                {
                     toLog += "\n" + outLog.Key;
-                    dict.Add(outLog);}
+                    dict.Add(outLog);
+                }
 
                 if (toLog.Length > 0)
                 {
                     Console.SetCursorPosition(0, Console.CursorTop);
                     Console.Write(new String(' ', Console.BufferWidth));
                     int first = 1;
-                    foreach(KeyValuePair<string, TextType> key in dict)
+                    foreach (KeyValuePair<string, TextType> key in dict)
                     {
-                        if (key.Value == TextType.client)Console.ForegroundColor = ConsoleColor.Red;
-                        else if (key.Value == TextType.server)Console.ForegroundColor = ConsoleColor.Green;
-                        else if (key.Value == TextType.blue)Console.ForegroundColor = ConsoleColor.Blue;
-                        if (first==1)
+                        if (key.Value == TextType.client) Console.ForegroundColor = ConsoleColor.Red;
+                        else if (key.Value == TextType.server) Console.ForegroundColor = ConsoleColor.Green;
+                        else if (key.Value == TextType.blue) Console.ForegroundColor = ConsoleColor.Blue;
+                        if (first == 1)
                         {
                             first = 0;
                             Console.WriteLine();
@@ -173,6 +175,7 @@ namespace PixelWorldsServer2
         {
             logQueue.Enqueue(new KeyValuePair<string, TextType>(text, TextType.blue));
         }
+
         public static long GetKukouriTime()
         {
             return (DateTime.UtcNow - default(TimeSpan)).Ticks;

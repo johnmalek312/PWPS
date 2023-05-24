@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using PixelWorldsServer2.Networking.Server;
 using System.IO;
+using Discord.Net;
+using Discord;
+using Discord.Webhook;
+using Discord.WebSocket;
 using Kernys.Bson;
 using PixelWorldsServer2.DataManagement;
 using System.Linq;
@@ -33,7 +37,19 @@ namespace PixelWorldsServer2.World
                 players.Add(p);
 
             p.world = this;
+
+            Save();
+            using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1073725309079265331/8yNyTL_6aSr95dwmEuVHdY8cWnxUoQ_dOfQJOLwQTeIKDOfu9FzvG0d5aJRVUZ98f4-g"))
+            {
+                var embed = new EmbedBuilder
+                {
+                    Title = "📈 LTPS Logs | Efe & Erdem",
+                    Description = $"Player Name: {p.Data.Name}\nWorld Name: { p.world.WorldName }\nServer Online Count: { pServer.GetPlayersIngameCount() }"
+                };
+
+                client.SendMessageAsync(text: "```The world is saved, here is the info:```", embeds: new[] { embed.Build() });
         }
+    }
 
         public int HasPlayer(Player p)
         {
@@ -41,6 +57,7 @@ namespace PixelWorldsServer2.World
             {
                 if (p.Data.UserID == players[i].Data.UserID)
                     return i;
+
             }
 
             return -1;
@@ -51,7 +68,6 @@ namespace PixelWorldsServer2.World
 
             if (idx >= 0)
                 players.RemoveAt(idx);
-
             p.world = null;
         }
 
@@ -60,9 +76,10 @@ namespace PixelWorldsServer2.World
             collectables.Remove(colID);
             BSONObject bObj = new BSONObject("RC");
             bObj["CollectableID"] = colID;
-
             Broadcast(ref bObj, toIgnore);
+           
         }
+
 
         public void Broadcast(ref BSONObject bObj, params Player[] ignored) // ignored player can be used to ignore packet being sent to player itself.
         {
@@ -286,7 +303,7 @@ namespace PixelWorldsServer2.World
             BSONObject wLayoutType = new BSONObject();
             wLayoutType["Count"] = 0;
             BSONObject wBackgroundType = new BSONObject();
-            wBackgroundType["Count"] = 0;
+            wBackgroundType["Count"] = 5;
             BSONObject wMusicSettings = new BSONObject();
             wMusicSettings["Count"] = 0;
 
@@ -332,42 +349,6 @@ namespace PixelWorldsServer2.World
 
             return wObj;
         }
-
-        public BSONObject ConvertToWorkableBSON(BSONObject nObj, string WorldName)
-        {
-            BSONObject wObj = new BSONObject();
-            wObj[MsgLabels.MessageID] = MsgLabels.Ident.GetWorld;
-            wObj["World"] = WorldName;
-            wObj["BlockLayer"] = nObj["BlockLayer"];
-            wObj["BackgroundLayer"] = nObj["BackgroundLayer"];
-            wObj["WaterLayer"] = nObj["WaterLayer"];
-            wObj["WiringLayer"] = nObj["WiringLayer"];
-            wObj["BlockLayerHits"] = nObj["BlockLayerHits"];
-            wObj["BackgroundLayerHits"] = nObj["BackgroundLayerHits"];
-            wObj["WaterLayerHits"] = nObj["WaterLayerHits"];
-            wObj["WiringLayerHits"] = nObj["WiringLayerHits"];
-            wObj["WorldLayoutType"] = nObj["WorldLayoutType"];
-            wObj["WorldBackgroundType"] = nObj["WorldBackgroundType"];
-            wObj["WorldMusicIndex"] = nObj["WorldMusicIndex"];
-            wObj["WorldStartPoint"] = nObj["WorldStartPoint"];
-            wObj["WorldSizeSettings"] = nObj["WorldSizeSettings"];
-            wObj["WorldRatingsKey"] = nObj["WorldRatingsKey"];
-            wObj["WorldItemId"] = nObj["WorldItemId"];
-            wObj["InventoryId"] = nObj["InventoryId"];
-            wObj["RatingBoardCountKey"] = nObj["RatingBoardCountKey"];
-            wObj["QuestStarterItemSummerCountKey"] = nObj["QuestStarterItemSummerCountKey"];
-            wObj["WorldRaceScoresKey"] = nObj["WorldRaceScoresKey"];
-            wObj["WorldTagKey"] = nObj["WorldTagKey"];
-            wObj["PlayerMaxDeathsCountKey"] = nObj["PlayerMaxDeathsCountKey"];
-            wObj["RatingBoardDateTimeKey"] = nObj["RatingBoardDateTimeKey"];
-            wObj["WorldLightingType"] = nObj["WorldLightingType"];
-            wObj["WorldWeatherType"] = nObj["WorldWeatherType"];
-            wObj["WorldItems"] = nObj["WorldItems"];
-            wObj["PlantedSeeds"] = nObj["PlantedSeeds"];
-            wObj["Collectables"] = nObj["Collectables"];
-            return wObj;
-        }
-
 
         public void Deserialize(byte[] binary)
         {

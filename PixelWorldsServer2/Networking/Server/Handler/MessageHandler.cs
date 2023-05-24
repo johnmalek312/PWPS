@@ -8,7 +8,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Discord.WebSocket;
+using Discord.Net;
+using Discord;
+using Discord.Webhook;
+using static PixelWorldsServer2.World.WorldSession;
 using static PixelWorldsServer2.World.WorldInterface;
+using static PixelWorldsServer2.Player;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -20,6 +26,12 @@ namespace PixelWorldsServer2.Networking.Server
         {
             pServer = pwServer;
         }
+        private List<WorldSession> worlds = new List<WorldSession>();
+        public List<WorldSession> GetWorlds() => worlds;
+
+        private List<InventoryItem> itemList = new List<InventoryItem>();
+        public List<InventoryItem> Items => itemList;
+
 
         public void ProcessBSONPacket(FeatherClient client, BSONObject bObj)
         {
@@ -33,16 +45,14 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 Util.Log("Invalid bson packet (no mc!)");
                 client.DisconnectLater();
-                return; // Invalid Pixel Worlds BSON packet!
+                return; // Invalid Pixel Worlds BSON packet/!
             }
-#if RELEASE
 
+#if RELEASE
 #endif
             int messageCount = bObj["mc"];
-            //if(messageCount == 0)
-            //{
-            //    Util.LogClient("Empty ping.");
-            //}
+
+
             Player p = client.data == null ? null : ((Player.PlayerData)client.data).player;
             for (int i = 0; i < messageCount; i++)
             {
@@ -51,15 +61,11 @@ namespace PixelWorldsServer2.Networking.Server
 
                 BSONObject mObj = bObj[$"m{i}"] as BSONObject;
                 string mID = mObj[MsgLabels.MessageID];
-
-                //#if DEBUG
-                ReadBSON(mObj, Log: Util.LogClient);
-                //#endif
+                if (mObj["ID"].stringValue != "mP") ReadBSON(mObj, Log: Util.LogClient);
 
                 switch (mID)
                 {
                     case MsgLabels.Ident.VersionCheck:
-                        ///#if DEBUG
                         Util.Log("Client requests version check, responding now...");
                         //#endif
                         BSONObject resp = new BSONObject();
@@ -216,6 +222,8 @@ namespace PixelWorldsServer2.Networking.Server
                         HandleMovePlayer(p, mObj);
                         break;
 
+                    
+
                     case MsgLabels.Ident.SetBlock:
                         HandleSetBlock(p, mObj);
                         break;
@@ -235,6 +243,7 @@ namespace PixelWorldsServer2.Networking.Server
                     case MsgLabels.Ident.SyncTime:
                         HandleSyncTime(client);
                         break;
+
 
                     default:
                         pServer.OnPing(client, 1);
@@ -284,7 +293,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if (p.isInGame)
                 {
-                    Util.Log("Account is online already, disconnecting current client...");
+                    Util.Log("Account is online already, disconnecting current client!");
                     if (p.Client != null)
                     {
                         if (p.Client.isConnected())
@@ -298,23 +307,28 @@ namespace PixelWorldsServer2.Networking.Server
 
             p.Data.CognitoID = cogID;
             p.Data.Token = cogToken;
-
             BSONObject pd = new BSONObject("pD");
             pd[MsgLabels.PlayerData.ByteCoinAmount] = p.Data.Coins;
             pd[MsgLabels.PlayerData.GemsAmount] = p.Data.Gems;
             pd[MsgLabels.PlayerData.Username] = p.Data.Name.ToUpper();
-            pd[MsgLabels.PlayerData.PlayerOPStatus] = (int)p.pSettings.GetHighestRank();
-            pd[MsgLabels.PlayerData.InventorySlots] = 400;
             pd[MsgLabels.PlayerData.PlayerOPStatus] = (int)p.Data.adminStatus;
+            pd[MsgLabels.PlayerData.InventorySlots] = 400;
+            pd[MsgLabels.PlayerData.ShowOnlineStatus] = true;
+            pd[MsgLabels.PlayerData.ShowLocation] = true;
 
             // pd["experienceAmount"] = 180000;
             // pd["xpAmount"] = 180000;
+
+
+
 
             if (p.Data.Inventory.Items.Count == 0)
             {
                 p.Data.Inventory.InitFirstSetup();
             }
 
+            pd["xpAmount"] = 599;
+            pd["experienceAmount"] = 100;
             pd["inv"] = p.Data.Inventory.Serialize();
             pd["tutorialState"] = 3;
             resp["rUN"] = p.Data.Name;
@@ -322,7 +336,7 @@ namespace PixelWorldsServer2.Networking.Server
             resp["U"] = p.Data.UserID.ToString("X8");
             resp["Wo"] = "PIXELSTATION";
             resp["EmailVerified"] = true;
-            resp["Email"] = p.IsUnregistered() ? "Register via /register!" : "Registered!";
+            resp["Email"] = p.IsUnregistered() ? "Use /register at any world" : "discord.gg/U9695nTdB6";
 
             p.SetClient(client); // override client...
             client.data = p.Data;
@@ -332,6 +346,7 @@ namespace PixelWorldsServer2.Networking.Server
         }
 
         public string HandleCommandClearInventory(Player p)
+
         {
             p.Data.Inventory.Items.Clear();
             BSONObject r = new BSONObject("DR");
@@ -344,7 +359,7 @@ namespace PixelWorldsServer2.Networking.Server
         {
             if (args.Length < 2)
             {
-                return "Usage: /gm (message to broadcast)";
+                return "Usage: /gm (your message)";
             }
 
             string msg_query = "";
@@ -357,35 +372,35 @@ namespace PixelWorldsServer2.Networking.Server
             }
 
 
-            if (p.Data.Gems >= 100)
+            if (p.Data.Gems >= 5000)
             {
-                p.RemoveGems(100);
+                p.RemoveGems(5000);
                 BSONObject gObj = new BSONObject(MsgLabels.Ident.BroadcastGlobalMessage);
-                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#00FFFF>Broadcast from {p.Data.Name}", p.world.WorldName, p.world.WorldName, 1,
+                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#C576F6>{p.Data.Name}", p.world.WorldName , p.world.WorldName, 1,
                    msg_query);
 
                 pServer.Broadcast(ref gObj);
 
-                return "Sent message to everybody.";
+                return "" ;
             }
             else
             {
-                return "Not enough gems to send a Global Message to everybody! (You need 100 at least).";
+                return "Not enough gems to send a Global Message! (You need 5000 Gems to sent broadcast).";
             }
         }
 
         public string HandleCommandPay(Player p, string[] args)
         {
             if (args.Length < 3)
-                return "Usage: /pay (NAME) (GEMS)";
+                return "Usage: /pay (name) (gems amount)";
 
             string user = args[1];
             int amt;
             int.TryParse(args[2], out amt);
 
-            if (amt < 50 || amt > 9999999)
+            if (amt < 100 || amt > 999999)
             {
-                return "Can only send gems between 50 and 9999999!";
+                return "Can only send gems between 100 and 999999!";
             }
 
             if (p.Data.Gems < amt)
@@ -393,21 +408,34 @@ namespace PixelWorldsServer2.Networking.Server
 
             var player = pServer.GetOnlinePlayerByName(user);
             if (player == null)
-                return String.Format(">> {0} is offline.", user);
+                return String.Format("{0} is offline.", user);
 
             if (player == p)
-                return "Cannot transfer gems to yourself, duh!";
+                return "Cannot transfer gems to yourself, nice try!";
 
             p.RemoveGems(amt);
             player.AddGems(amt);
 
-            return String.Format("Transferred {0} Gems to Account {1}!", amt, player.Data.Name);
+            return String.Format("Transfered {0} Gems to Account {1}!", amt, player.Data.Name);
+
+            using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1109600606349443072/1Zv7q3hFhPVU69NScp7yLO8BoGBugndmBxcpVLR3jdZnta0Leg41vZxD4Zwv202h26LG"))
+            {
+                var embed = new EmbedBuilder
+                {
+                    Title = "💎 Transfer Logs",
+                    Description = $"Transfered { 0 } Gems to Account { 1 }!"
+                };
+
+                client.SendMessageAsync(text: "```Economy Protector:```", embeds: new[] { embed.Build() });
+        }
+
+
         }
 
         public string HandleCommandRegister(Player p, string[] args)
         {
             if (args.Length < 3)
-                return "Usage: /register (NAME) (PASS)";
+                return "Usage: /register (name) (password)";
 
             string name = args[1], pass = args[2];
 
@@ -425,7 +453,7 @@ namespace PixelWorldsServer2.Networking.Server
             using (var read = sql.FetchQuery($"SELECT * FROM players WHERE Name='{name}'"))
             {
                 if (read.HasRows)
-                    return "An account with this name already exists.";
+                    return "An account with this name already exists!";
             }
 
             if (sql.Query($"UPDATE players SET Name='{name}', Pass='{pass}' WHERE ID='{p.Data.UserID}'") > 0)
@@ -443,7 +471,7 @@ namespace PixelWorldsServer2.Networking.Server
         public string HandleCommandLogin(Player p, string[] args)
         {
             if (args.Length < 3)
-                return "Usage: /login (NAME) (PASS)";
+                return "Usage: /login (name) (password)";
 
             string name = args[1], pass = args[2];
 
@@ -462,10 +490,10 @@ namespace PixelWorldsServer2.Networking.Server
                 uint uID = 0;
 
                 if (!read.HasRows)
-                    return "Account does not exist or password is wrong!";
+                    return "Account does not exist or password is wrong! Try again?";
 
                 if (!read.Read())
-                    return "Account does not exist or password is wrong!";
+                    return "Account does not exist or password is wrong! Try again?";
 
 
                 uID = (uint)(long)read["ID"];
@@ -490,6 +518,8 @@ namespace PixelWorldsServer2.Networking.Server
 
             return "Couldn't login right now, try again!";
         }
+
+
 
         public void HandleWorldChatMessage(Player p, BSONObject bObj)
         {
@@ -516,7 +546,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help /item (item id) /find (item name) /register (username pass) /login (username pass) /gm (message, uses 100 gems) /spin /pay (username gems)";
+                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /trashall (trashs all item on inventory) , /givegems , /shop , /buyvip";
                         break;
 
                     case "/gm":
@@ -525,13 +555,14 @@ namespace PixelWorldsServer2.Networking.Server
                             break;
                         }
 
-                    case "/spin":
+                    case "/notavaiablecsn023":
                         BSONObject gObj = new BSONObject(MsgLabels.Ident.BroadcastGlobalMessage);
                         gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#00FAFA>{p.Data.Name}", p.world.WorldName, p.world.WorldName, 1,
                            String.Format("Spun the wheel and got {0}", Util.rand.Next(0, 36)));
 
+ 
                         p.world.Broadcast(ref gObj);
-                        res = "Everybody saw you SPIN!";
+                        res = "You spin the wheel!";
                         break;
 
                     case "/pay":
@@ -540,11 +571,12 @@ namespace PixelWorldsServer2.Networking.Server
                             break;
                         }
 
+
                     case "/find":
                         {
                             if (tokCount < 2)
                             {
-                                res = "Usage: /find (ITEM NAME)";
+                                res = "Usage: /find (item name)";
                                 break;
                             }
 
@@ -571,7 +603,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                                 foreach (var it in items)
                                 {
-                                    found += $"\nItem Name: {it.name}   ID: {it.ID}";
+                                    found += $"\nItem Name: {it.name} ID: {it.ID}";
                                 }
 
                                 res = $"Found items:{found}";
@@ -587,22 +619,155 @@ namespace PixelWorldsServer2.Networking.Server
                         res = HandleCommandRegister(p, tokens);
                         break;
 
-                    case "/clearinv":
+                    case "/shop":
+                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Mod Pack | Purchase Command: /modpack\n4- Hand Pack | Purchase Command: /handpack";
+                        break;
+
+
+                    case "/trashall":
                         res = HandleCommandClearInventory(p);
                         break;
 
+                    case "/wingspack":
+                        if (p.Data.Gems >= 100000)
+                        {
+                            res = "Bought Wings Pack for 100.000 Gems!";
+                            p.RemoveGems(100000);
+                            p.Data.Inventory.wingsPack();
+                            BSONObject aws = new BSONObject("DR");
+                            p.Send(ref aws);
+                            
+                        }
+                        else
+                        {
+                            res = "Wings Pack is 100.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings";
+                        }
+                               
+                        break;
+
+
+
+                    case "/vippack":
+                        if (p.Data.Gems >= 75000)
+                        {
+                            res = "Bought VIP Pack for 75000 Gems!";
+                            p.RemoveGems(75000);
+                            p.Data.Inventory.vipEsyaVer();
+                            BSONObject awsa = new BSONObject("DR");
+                            p.Send(ref awsa);
+
+                        }
+                        else
+                        {
+                            res = "VIP Pack is 75.000 Gems. Not enough gems to purchase!\nWings Pack includes: Every VIP item on shop which you are not avaiable to purchase.";
+                        }
+
+                        break;
+
+
+                    case "/modpack":
+                        if (p.Data.Gems >= 5000000)
+                        {
+                            res = "Bought Mod Pack for 5000000 Gems!";
+                            p.RemoveGems(5000000);
+                            p.pSettings.Set(PlayerSettings.Bit.SET_MOD);
+                            p.Data.Inventory.modPack();
+                            BSONObject awsaa = new BSONObject("DR");
+                            p.Send(ref awsaa);
+
+                        }
+                        else
+                        {
+                            res = "Moderator Pack is 5.000.000 Gems. Not enough gems to purchase!\nModerator Pack includes: @In-Game Moderator Rank + İnvisability Power + Mod Hoodie";
+                        }
+
+                        break;
+
+
+                    case "/handpack":
+                        if (p.Data.Gems >= 75000)
+                        {
+                            res = "Bought Hand Pack for 75000 Gems!";
+                            p.RemoveGems(75000);
+                            p.Data.Inventory.handPack();
+                            BSONObject awsaa = new BSONObject("DR");
+                            p.Send(ref awsaa);
+
+                        }
+                        else
+                        {
+                            res = "Hand Pack is 75.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver ";
+                        }
+
+                        break;
+
+
+
+
+
                     case "/login":
                         res = HandleCommandLogin(p, tokens);
+              
                         break;
 
-                    case "/seed":
+                    case "/online":
+                        res = ($"{ pServer.GetPlayersIngameCount() } players are online.");
+                        break;
+
+                    case "/givegems":
+                        res = "Given 25 Gems";
+                        p.AddGems(25);
+                        break;
+
+
+
+                    case "/buyvip":
+                        if (p.Data.Gems >= 400000)
+                        {
+                            res = "INFLUENCER Role Have been give successfully.";
+                            p.pSettings.Set(PlayerSettings.Bit.SET_VIP);
+                            p.RemoveGems(400000);
+                            BSONObject r = new BSONObject("DR");
+                            p.Send(ref r);
+                            using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1073725309079265331/8yNyTL_6aSr95dwmEuVHdY8cWnxUoQ_dOfQJOLwQTeIKDOfu9FzvG0d5aJRVUZ98f4-g"))
+                            {
+                                var embed = new EmbedBuilder
+                                {
+                                    Title = "🔒 Role Purchase",
+                                    Description = "LTPS | Efe & Erdem"
+                                };
+
+                                client.SendMessageAsync(text: "Someone just bought INFLUENCER role! Nice everyone.", embeds: new[] { embed.Build() });
+                            }
+
+
+                        }
+
+                        else
+                        {
+                            res = "@INFLUENCER role cost 400.000 Gems, you cant afford it. Break more blocks to gain gems.";
+
+                        }
+                        break;
+
 
                         break;
 
-                    case "/item":
+                    case "/vipitems":
+                            p.Data.Inventory.vipEsyaVer();
+                            res = "Added 201 Each VIP items to your inventory.";
+                            BSONObject aw = new BSONObject("DR");
+                            p.Send(ref aw);
+                        
+                      
+
+                        break;
+
+
+                    case "/give":
                         if (tokCount < 2)
                         {
-                            res = "Usage: /item (ITEM ID)";
+                            res = "Usage: /give (Item ID)";
                         }
                         else
                         {
@@ -611,7 +776,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                             var it = ItemDB.GetByID(id);
 
-                            if (it.ID < 0)
+                            if (it.ID <= 0)
                             {
                                 res = $"Item {id} not found!";
                             }
@@ -620,12 +785,14 @@ namespace PixelWorldsServer2.Networking.Server
 
                                 if (Shop.ContainsItem(id))
                                 {
-                                    res = "This item must be bought!";
+                                    res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
                                 }
-                                p.world.Drop(id, 999, p.Data.PosX, p.Data.PosY);
+                                p.world.Drop(id, 25, p.Data.PosX, p.Data.PosY);
 
-                                res = @$"Given 999 {it.name}  (ID {id}).";
+                                res = @$"Given 25 {it.name}  (ID {id}).";
+
+                                
                             }
                         }
                         break;
@@ -636,7 +803,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if (res != "")
                 {
-                    bObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#FF0000>System",
+                    bObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#FFA500>LTPS",
                         p.world.WorldName,
                         p.world.WorldName,
                         1,
@@ -710,6 +877,8 @@ namespace PixelWorldsServer2.Networking.Server
                 }
             }
 
+
+
             bObj["IPRs2"] = new List<int>();
 
             p.Send(ref bObj);
@@ -730,7 +899,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             }
 
-            Util.Log($"Player with userID: {p.Data.UserID.ToString()} is trying to join a world [{pServer.GetPlayersIngameCount()} players online!]...");
+            Util.Log($"Player with userID: { p.Data.UserID.ToString() } is trying to join a world [{ pServer.GetPlayersIngameCount() } players online!]...");
 
             BSONObject resp = new BSONObject(MsgLabels.Ident.TryToJoinWorld);
             resp[MsgLabels.JoinResult] = (int)MsgLabels.JR.UNAVAILABLE;
@@ -826,8 +995,17 @@ namespace PixelWorldsServer2.Networking.Server
                 string prefix = "";
                 switch (player.pSettings.GetHighestRank())
                 {
+
+                    case Ranks.INFLUENCER:
+                        prefix = "<color=#69de05>";
+                        break;
+
                     case Ranks.ADMIN:
-                        prefix = "<color=#FF0000>";
+                        prefix = "<color=#E744DE>";
+                        break;
+
+                    case Ranks.MODERATOR:
+                        prefix = "<color=#42e2fa>";
                         break;
 
                     default:
@@ -843,17 +1021,18 @@ namespace PixelWorldsServer2.Networking.Server
                 List<int> spotsList = new List<int>();
                 //spotsList.AddRange(player.GetSpots());
 
+                
                 pObj["spots"] = spotsList;
                 pObj["familiar"] = 0;
-                pObj["familiarName"] = "";
+                pObj["familiarName"] = "LTPS";
                 pObj["familiarLvl"] = 0;
                 pObj["familiarAge"] = kukTime;
                 pObj["isFamiliarMaxLevel"] = false;
                 pObj["UN"] = prefix + player.Data.Name;
                 pObj["U"] = player.Data.UserID.ToString("X8");
                 pObj["Age"] = 69;
-                pObj["LvL"] = 99;
-                pObj["xpLvL"] = 99;
+                pObj["LvL"] = 10;
+                pObj["xpLvL"] = 10;
                 pObj["pAS"] = 0;
                 pObj["PlayerAdminEditMode"] = false;
                 pObj[MsgLabels.PlayerData.PlayerOPStatus] = (int)player.pSettings.GetHighestRank();
@@ -868,7 +1047,7 @@ namespace PixelWorldsServer2.Networking.Server
                 pObj["SIc"] = 0;
                 pObj["D"] = 0;
                 pObj["VIPEndTimeAge"] = kukTime;
-                pObj["IsVIP"] = false;
+                pObj["IsVIP"] = true;
 
                 p.Send(ref pObj);
             }
@@ -897,9 +1076,9 @@ namespace PixelWorldsServer2.Networking.Server
             if (p.world == null)
                 return;
 
-            if (p.Data.Gems >= 2500)
+            if (p.Data.Gems >= 5000)
             {
-                p.RemoveGems(2500);
+                p.RemoveGems(5000);
 
                 var cmb = SimpleBSON.Load(Convert.FromBase64String(bObj["msg"]));
 
@@ -908,7 +1087,7 @@ namespace PixelWorldsServer2.Networking.Server
                     return;
 
                 BSONObject gObj = new BSONObject(MsgLabels.Ident.BroadcastGlobalMessage);
-                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#00FFFF>Broadcast from {p.Data.Name}", p.world.WorldName, p.world.WorldName, 1,
+                gObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage($"<color=#DA83E88>{p.Data.Name}", p.world.WorldName, p.world.WorldName, 1,
                    msg);
 
                 pServer.Broadcast(ref gObj);
@@ -932,25 +1111,34 @@ namespace PixelWorldsServer2.Networking.Server
             pObj["a"] = p.Data.Anim;
             pObj["d"] = p.Data.Dir;
             List<int> spotsList = new List<int>();
-            //spotsList.AddRange(Enumerable.Repeat(0, 35));
+          //  spotsList.AddRange(Enumerable.Repeat(35, 35));
 
             string prefix = "";
             switch (p.pSettings.GetHighestRank())
             {
+                case Ranks.INFLUENCER:
+                    prefix = "<color=#69de05>";
+                    break;
+
                 case Ranks.ADMIN:
-                    prefix = "<color=#FF0000>";
+                    prefix = "<color=#E744DE>";
+                    break;
+
+                case Ranks.MODERATOR:
+                    prefix = "<color=#42e2fa>";
                     break;
 
                 default:
                     break;
             }
 
+
             pObj["spots"] = spotsList;
             pObj["familiar"] = 0;
-            pObj["familiarName"] = "";
+            pObj["familiarName"] = "LTPS";
             pObj["familiarLvl"] = 0;
             pObj["familiarAge"] = kukTime;
-            pObj["isFamiliarMaxLevel"] = false;
+            pObj["isFamiliarMaxLevel"] = true;
             pObj["UN"] = prefix + p.Data.Name;
             pObj["U"] = p.Data.UserID.ToString("X8");
             pObj["Age"] = 69;
@@ -969,19 +1157,22 @@ namespace PixelWorldsServer2.Networking.Server
             pObj["SIc"] = 0;
             pObj["VIPEndTimeAge"] = kukTime;
             pObj[MsgLabels.PlayerData.PlayerOPStatus] = (int)p.pSettings.GetHighestRank();
-            pObj["IsVIP"] = false;
+            pObj["IsVIP"] = true;
 
             p.world.Broadcast(ref pObj, p);
 
             BSONObject cObj = new BSONObject("WCM");
 
-            cObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#00FF00>Credits",
+            cObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#FFFF00>LTPS - #1 Pixel Worlds Server\nYou are able to purchase packs with gems, use /shop for more info!\nPlease login or register via commands only.\n",
                     p.world.WorldName,
                     p.world.WorldName,
                     1,
-                    "PWPS by Bytez, discord.gg/bxF65jx7Vs");
+                    "  --------------------\nWelcome to our server, If you need any help please join our discord server here: https://t.ly/wos5");
 
-            //p.Send(ref cObj);
+            p.Send(ref cObj);
+
+            ///
+
         }
 
         public void HandleRequestAI(Player p, BSONObject bObj)
@@ -1189,7 +1380,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if ((w.OwnerID > 0 && w.OwnerID != p.Data.UserID))
                 {
-                    p.SelfChat("World is owned by " + pServer.GetNameFromUserID(w.OwnerID));
+                    p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.OwnerID));
                     return;
                 }
 
@@ -1212,7 +1403,8 @@ namespace PixelWorldsServer2.Networking.Server
                     double pX = x / Math.PI, pY = y / Math.PI;
 
                     for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(5));
+                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(3));
+         
                 }
 
                 tile.bg.lastHit = Util.GetSec();
@@ -1241,7 +1433,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if ((p.world.OwnerID > 0 && p.world.OwnerID != p.Data.UserID))
                 {
-                    p.SelfChat("World is owned by " + pServer.GetNameFromUserID(w.OwnerID));
+                    p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.OwnerID));
                     return;
                 }
 
@@ -1268,8 +1460,9 @@ namespace PixelWorldsServer2.Networking.Server
                     }
 
                     for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(5));
+                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(3));
 
+                    
                     tile.fg.id = 0;
                     tile.fg.damage = 0;
                 }
@@ -1303,7 +1496,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             if ((p.world.OwnerID > 0 && p.world.OwnerID != p.Data.UserID))
             {
-                p.SelfChat("World is owned by " + pServer.GetNameFromUserID(w.OwnerID));
+                p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.OwnerID));
                 return;
             }
 
@@ -1355,7 +1548,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             if ((w.OwnerID > 0 && w.OwnerID != p.Data.UserID))
             {
-                p.SelfChat("World is owned by " + pServer.GetNameFromUserID(w.OwnerID));
+                p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.OwnerID));
                 return;
             }
 
@@ -1449,7 +1642,6 @@ namespace PixelWorldsServer2.Networking.Server
 
             client.Send(resp);
         }
-        private byte[] OnPacket(byte[] revBuffer, String from)
         {
             // Remove padding and load the bson.
             byte[] data = new byte[revBuffer.Length - 4];

@@ -22,6 +22,7 @@ namespace PixelWorldsServer2.DataManagement // misc packet & internal server dat
         PLAYER,
         MODERATOR,
         ADMIN,
+        VIP,
         INFLUENCER
     }
 }

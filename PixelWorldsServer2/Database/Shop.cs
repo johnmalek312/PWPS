@@ -40,22 +40,18 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("PetFoodDogPremium", 1250, 3856);
             AddShopOffer("SmallLock", 100, 410);
             AddShopOffer("MediumLock", 500, 411);
+            AddShopOffer("CapeDracula", 1500, 1298);
             AddShopOffer("LargeLock", 1000, 412);
             AddShopOffer("BattleLock", 3000, 1132);
             AddShopOffer("BattleWorldLock", 7500, 3060);
-            AddShopOffer("DarkWorldLock", 28000, 882);
+            AddShopOffer("DarkWorldLock", 30000, 882);
             AddShopOffer("FrostWings", 100000, 2608);
             AddShopOffer("PixieWings", 7500, 586);
             AddShopOffer("GreenContactLenses", 7500, 906);
-            AddShopOffer("BlueDragonWings", 75000, 880);
             AddShopOffer("SodaJetpack", 400000, 881);
             AddShopOffer("BlueContactLenses", 7500, 905);
             AddShopOffer("BrownContactLenses", 7500, 908);
             AddShopOffer("SilverContactLenses", 7500, 909);
-            AddShopOffer("TurquoiseContactLenses", 22000, 913);
-            AddShopOffer("GoldContactLenses", 28000, 907);
-            AddShopOffer("PurpleContactLenses", 30000, 910);
-            AddShopOffer("WhiteContactLenses", 125000, 911);
             AddShopOffer("RedContactLenses", 150000, 609);
             AddShopOffer("AlienLenses", 300000, 3088);
             AddShopOffer("GoblinRing", 60000, 935);
@@ -72,12 +68,18 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("FishingScoreBoard", 15000, 2535);
             AddShopOffer("FishingRecycler", 20000, 2504);
             AddShopOffer("SupportHoodie", 10000, 879);
+            AddShopOffer("SpiritB", 10000, 3483);
+            AddShopOffer("DuaalBlades", 10000, 4281);
             AddShopOffer("PinkSupportHoodie", 10000, 1023);
             AddShopOffer("WingsDemon", 12000, 215);
             AddShopOffer("Fertilizer", 150, 1070);
+            AddShopOffer("SpiritBlade", 150, 1306);
+            AddShopOffer("ScorcherWings", 1520202020, 4768);
             AddShopOffer("FertilizerLarge", 300, 1499);
+            AddShopOffer("FertilizerLarge", 3002222, 2293);
             AddShopOffer("Snowman", 55000, 1458);
             AddShopOffer("Penguin", 70000, 1463);
+            AddShopOffer("Scythe", 70000, 1305);
             AddShopOffer("Bunny", 35000, 1095);
             AddShopOffer("Crow", 50000, 1093);
             AddShopOffer("Mini-bot", 65000, 1100);
@@ -91,6 +93,15 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("PetFoodCatPremium", 1250, 3858);
             AddShopOffer("PetFoodSlimeBasic", 500, 3859);
             AddShopOffer("PetFoodSlimePremium", 1250, 3860);
+            AddShopOffer("ModHoodie", 125233230, 1038);
+            AddShopOffer("CthulhuWings", 1250000000, 1350);
+            AddShopOffer("BanHammer", 1250000000, 731);
+            AddShopOffer("JakeKatana", 1250000000, 606);
+            AddShopOffer("JakeKatana", 1250000000, 4197);
+            AddShopOffer("SantaBeard", 1250000000, 545);
+            AddShopOffer("TormentorWings", 1250000000, 2292);
+            AddShopOffer("DarkifritWings", 1250000000, 4268);
+            AddShopOffer("DarkSpriteWings", 5125500, 3481);
             AddShopOffer("PetMedicineBasic", 500, 3861);
             AddShopOffer("OrbLightingLesserDark", 75000, 4141);
             AddShopOffer("OrbLightingDark", 75000, 3922);
@@ -178,11 +189,37 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("CheckPointFactionDark", 3500, 3598);
             AddShopOffer("CheckPointFactionLight", 3500, 3599);
             AddShopOffer("PortalFactionDark", 4000, 3600);
+            AddShopOffer("DarkPixieWings", 4000, 608);
             AddShopOffer("PortalFactionLight", 100, 3601);
             AddShopOffer("BattleScoreBoardFaction", 8000, 3597);
             AddShopOffer("LockBattleFaction", 7500, 3596);
             AddShopOffer("LockWorldBattleFaction", 9000, 3606);
+            AddShopOffer("KeyWorld", 1000000000, 418);
+            AddShopOffer("LockDiamond", 1000000000, 415);
+            AddShopOffer("TokenLock", 1000000000, 1135);
+            AddShopOffer("Water", 1000000000, 110);
+            AddShopOffer("PortalEntrance", 1000000000, 18);
+            AddShopOffer("Suitİnvisable", 1000000000, 2096);
 
+
+
+            //  Bugged invisable items fix: Not useful items
+            AddShopOffer("TODO1", 1000000000, 37);
+            AddShopOffer("TODO2", 1000000000, 38);
+            AddShopOffer("TODO3", 1000000000, 39);
+            AddShopOffer("TODO4", 1000000000, 40);
+            AddShopOffer("TODO5", 1000000000, 41);
+            AddShopOffer("TODO6", 1000000000, 42);
+            AddShopOffer("TODO7", 1000000000, 43);
+            AddShopOffer("TODO8", 1000000000, 44);
+            AddShopOffer("TODO9", 1000000000, 45);
+            AddShopOffer("TODO10", 1000000000, 46);
+            AddShopOffer("TODO11", 1000000000, 47);
+            AddShopOffer("TODO12", 1000000000, 48);
+            AddShopOffer("TODO13", 1000000000, 606);
+            AddShopOffer("WALLBUG", 1000000000, 2048);
+            AddShopOffer("WALLBUG1", 1000000000, 2049);
+            AddShopOffer("WALLBUG2", 1000000000, 2050);
 
         }
     }

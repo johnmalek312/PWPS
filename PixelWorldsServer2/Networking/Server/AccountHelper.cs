@@ -55,7 +55,7 @@ namespace PixelWorldsServer2.Networking.Server
             cmd.Parameters.AddWithValue("@IP", ip);
             cmd.Parameters.AddWithValue("@AdminStatus", adminStatus);
 
-            string name = "Subject_" + Util.RandomString(8); // Name generation soon...
+            string name = "LTPS_" + Util.RandomString(8); // Name generation soon...
             cmd.Parameters.AddWithValue("@Name", name);
 
             if (sql.PreparedQuery(cmd) > 0)

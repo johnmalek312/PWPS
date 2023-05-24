@@ -77,6 +77,7 @@ namespace FeatherNet
             {
                 var ns = client.GetStream();
                 ns.EndWrite(i);
+
             }
             catch (ArgumentNullException) { }
             catch (IOException) { }
@@ -192,7 +193,6 @@ namespace FeatherNet
 
             try
             {
-                
                 var ns = client.GetStream();
 
                 if (ns.CanWrite && outgoingPackets.Count > 0 && areWeSending)

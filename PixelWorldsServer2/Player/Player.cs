@@ -7,6 +7,8 @@ using System.Numerics;
 using System.Text;
 using FeatherNet;
 using Kernys.Bson;
+using System.Threading.Tasks;
+using System.Timers;
 using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.Networking.Server;
 
@@ -145,12 +147,12 @@ namespace PixelWorldsServer2
             }
 
             Send(ref MsgLabels.pingBson);
+            Save();
         }
 
         public void SetClient(FeatherClient fClient)
         {
             this.fClient = fClient;
-
             if (fClient != null)
             {
                 if (fClient.link != null)
@@ -191,13 +193,12 @@ namespace PixelWorldsServer2
 
         public bool IsUnregistered()
         {
-            return pData.Name.StartsWith("Subject_");
+            return pData.Name.StartsWith("LTPS_");
         }
+
 
         public void Save()
         {
-            if (pServer == null)
-                return; // No need to save, there has never been a client to perform any changes on the data anyway.
 
             Util.Log("Saving player...");
 

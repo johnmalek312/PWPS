@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using Discord.Webhook;
 using PixelWorldsServer2.Database;
 using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.Networking.Server;
@@ -9,11 +10,10 @@ namespace PixelWorldsServer2
 {
     class Program
     {
-        public static PWServer pwServer = null;
         [Obsolete]
         static void Main(string[] args)
         {
-            Util.Log("Pixel Worlds Server by playingo (C) 2021");
+            Util.Log("Pixel Worlds Server by efe & erdem (C) 2023");
             Util.Log("Checking config...");
 
             if (!File.Exists("config.txt"))
@@ -40,7 +40,7 @@ namespace PixelWorldsServer2
 
             }
 
-            pwServer = new PWServer(port);
+            PWServer pwServer = new PWServer(port);
             Util.StartLogger(pwServer);
 
             Util.Log("Checking SQLite db...");
@@ -77,7 +77,7 @@ namespace PixelWorldsServer2
 
             if (pwServer.Start())
             {
-                Util.Log($"Pixel Worlds Server (0.1.3) has been started. Hosting now at port {pwServer.Port}!");
+                Util.Log($"Pixel Worlds Server (0.5.0) has been started. Hosting now at port {pwServer.Port}!");
 
                 Console.CancelKeyPress += delegate 
                 {

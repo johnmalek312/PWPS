@@ -2867,6 +2867,28 @@ namespace PixelWorldsServer2.World
 			HalloweenTower
 		}
 
+	
+
+		public class LayerBlock
+		{
+			public BlockType BlockType { get; set; } = BlockType.None;
+			public int HitsRequired { get; set; }
+			public int HitBuffer { get; set; }
+			public int WaitingBlockIndex { get; set; }
+			public bool IsWaitingForBlock { get; set; }
+			public bool IsWaitingForBlockTree { get; set; }
+
+			public DateTime LastHitTime { get; set; } = DateTime.Now;
+		}
+
+		public class LockAccess
+		{
+			public string Id { get; set; } = string.Empty;
+			public string Name { get; set; } = string.Empty;
+		}
+
+
+
 		public class Collectable
         {
 			public short item;
