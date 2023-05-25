@@ -25,6 +25,8 @@ namespace PixelWorldsServer2.World
         public uint WorldID = 0;
         public short SpawnPointX = 36, SpawnPointY = 24;
         public string WorldName = string.Empty;
+        public WorldInterface.WeatherType WeatherType = WorldInterface.WeatherType.None;
+        public WorldInterface.LayerBackgroundType BackGroundType;
         private WorldTile[,] tiles = null;
         public int GetSizeX() => tiles.GetUpperBound(0) + 1;
         public int GetSizeY() => tiles.GetUpperBound(1) + 1;
@@ -79,7 +81,7 @@ namespace PixelWorldsServer2.World
             Broadcast(ref bObj, toIgnore);
            
         }
-
+       
 
         public void Broadcast(ref BSONObject bObj, params Player[] ignored) // ignored player can be used to ignore packet being sent to player itself.
         {
@@ -185,6 +187,8 @@ namespace PixelWorldsServer2.World
                     ms.Write(BitConverter.GetBytes(col.posY));
                     ms.Write(BitConverter.GetBytes(col.gemType));
                 }
+                ms.Write(BitConverter.GetBytes((int)BackGroundType));
+                ms.Write(BitConverter.GetBytes((int)WeatherType));
 
                 File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
@@ -213,6 +217,8 @@ namespace PixelWorldsServer2.World
                     tiles[x, y].bg.id = 2;
                 }
             }
+            BackGroundType = LayerBackgroundType.CandyBackground;
+            WeatherType = WeatherType.DeepNether;
         }
 
         public WorldTile GetTile(int x, int y)
@@ -303,7 +309,7 @@ namespace PixelWorldsServer2.World
             BSONObject wLayoutType = new BSONObject();
             wLayoutType["Count"] = 0;
             BSONObject wBackgroundType = new BSONObject();
-            wBackgroundType["Count"] = 5;
+            wBackgroundType["Count"] = (int)BackGroundType;
             BSONObject wMusicSettings = new BSONObject();
             wMusicSettings["Count"] = 0;
 
@@ -320,6 +326,8 @@ namespace PixelWorldsServer2.World
             wRaceScores["Count"] = 0;
             BSONObject wLightingType = new BSONObject();
             wLightingType["Count"] = 0;
+            BSONObject wWeatherType = new BSONObject();
+            wWeatherType["Count"] = (int)WeatherType;
 
 
             wObj["WorldLayoutType"] = wLayoutType;
@@ -339,7 +347,7 @@ namespace PixelWorldsServer2.World
             wObj["PlayerMaxDeathsCountKey"] = 0;
             wObj["RatingBoardDateTimeKey"] = DateTimeOffset.UtcNow.Date;
             wObj["WorldLightingType"] = wLightingType;
-            wObj["WorldWeatherType"] = wLightingType;
+            wObj["WorldWeatherType"] = wWeatherType;
             wObj["WorldItems"] = new BSONObject();
 
             BSONObject pObj = new BSONObject();
@@ -398,6 +406,13 @@ namespace PixelWorldsServer2.World
                 c.gemType = BitConverter.ToInt16(binary, pos + 20);
                 collectables[++colID] = c;
                 pos += 22;
+            }
+            if(pos < binary.Length)
+            {
+                BackGroundType = (WorldInterface.LayerBackgroundType)BitConverter.ToInt32(binary, pos);
+                WeatherType = (WorldInterface.WeatherType)BitConverter.ToInt32(binary, pos + 4);
+                pos += 8;
+
             }
         }
 

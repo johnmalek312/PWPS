@@ -1,5 +1,9 @@
-﻿using Discord;
-using Discord.WebSocket;
+using FeatherNet;
+using Kernys.Bson;
+using PixelWorldsServer2.Database;
+using PixelWorldsServer2.DataManagement;
+using PixelWorldsServer2.World;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,7 +41,7 @@ namespace PixelWorldsServer2
 
         private static Task Connected()
         {
-            Util.Log("Discord Bot connected successfully!");
+            Util.Log("Discord Bot connected successfully!");       
             return Task.CompletedTask;
         }
 
@@ -53,7 +57,7 @@ namespace PixelWorldsServer2
         public static async Task Login()
         {
             await _client.LoginAsync(TokenType.Bot, token);
-            await _client.StartAsync();
+            await _client.StartAsync();  
         }
     }
 }

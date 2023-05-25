@@ -203,7 +203,13 @@ namespace FeatherNet
 
                     for (int i = 0; i < outgoingPackets.Count; i++)
                     {
+
+
                         MessageHandler.ReadBSON(outgoingPackets[i]);
+                        if (outgoingPackets[i]["ID"].stringValue == "GWC")
+                        {
+                            MessageHandler.ReadBSON(SimpleBSON.Load(Util.LZMAHelper.DecompressLZMA(outgoingPackets[i]["W"].binaryValue)));
+                        }
                         packet[$"m{i}"] = outgoingPackets[i];
                     }
                     packet["mc"] = outgoingPackets.Count;
@@ -221,15 +227,15 @@ namespace FeatherNet
                         Buffer.BlockCopy(bData, 0, data, 4, bData.Length);
                     else
                         return; // huh? Treat it to be legal just incase anyway...
-                    
+
                     lock (sendLock)
                     {
                         if (areWeSending)
                         {
                             areWeSending = false;
-                            ns.BeginWrite(data, 0, data.Length, OnEndWrite, null);
-                        }
-                    }
+                    ns.BeginWrite(data, 0, data.Length, OnEndWrite, null);
+                }
+            }
                 }
             }
             catch (Exception e)

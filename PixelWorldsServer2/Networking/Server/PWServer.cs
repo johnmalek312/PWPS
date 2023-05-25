@@ -120,7 +120,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (amount < 0)
             {
                 amount = -amount; // reverse the negativity with another negativity so that it actually removes positive gems again.
-                p.RemoveGems(amount); 
+                p.RemoveGems(amount);
 
                 Util.Log(String.Format("Removed {0} Gems from Account {1} (ID: {2})", amount, p.Data.Name, userID));
             }
@@ -130,7 +130,7 @@ namespace PixelWorldsServer2.Networking.Server
                 Util.Log(String.Format("Given {0} Gems to Account {1} (ID: {2})", amount, p.Data.Name, userID));
             }
 
-                    }
+        }
         private void HandleConsoleSetRank(uint userID, Ranks rankType)
         {
             // duration is in secs here...
@@ -160,7 +160,7 @@ namespace PixelWorldsServer2.Networking.Server
             }
 
             Util.Log("User rank has been set! Will request this user to reconnect...");
-            
+
             BSONObject r = new BSONObject("DR");
             p.Send(ref r);
         }
@@ -367,7 +367,7 @@ namespace PixelWorldsServer2.Networking.Server
                     if (p.isInGame)
                     {
                         playersOn++;
-                        
+
                         if (!p.isLoadingWorld)
                             p.Tick();
                     }
@@ -425,6 +425,7 @@ namespace PixelWorldsServer2.Networking.Server
                             }
                             catch (Exception ex)
                             {
+                                Console.WriteLine(ex);
                                 if (ex.Message.Contains("Don't know elementType"))
                                     ev.client.DisconnectLater();
                             }
@@ -450,7 +451,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
 
             Player p = client.data == null ? null : ((Player.PlayerData)client.data).player;
-            
+
             if (p == null)
                 return;
 
@@ -505,7 +506,7 @@ namespace PixelWorldsServer2.Networking.Server
             msgHandler.ProcessBSONPacket(client, packet);
             lock(client.sendLock){
             client.areWeSending = true;
-            }
+        }
         }
 
         private void OnConnect(FeatherClient client, int flags)

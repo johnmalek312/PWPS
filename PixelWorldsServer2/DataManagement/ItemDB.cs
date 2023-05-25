@@ -13,21 +13,21 @@ namespace PixelWorldsServer2.DataManagement
         LARGE,
         WORLD
     }
-    public enum ItemType
+    public enum InventoryItemType : byte
     {
-        BLOCK,
-        BACKGROUND,
-        FALL,
-        LIQUID,
-        CLOTHING,
-        WEAPON,
-        CONSUMABLE,
-        ORB,
-        SHARD,
-        BLUEPRINT,
-        FAMILIAR,
-        SNACK,
-        GATE,
+        Block,
+        BlockBackground,
+        Seed,
+        BlockWater,
+        WearableItem,
+        Weapon,
+        Throwable,
+        Consumable,
+        Shard,
+        Blueprint,
+        Familiar,
+        FAMFood,
+        BlockWiring
     }
 
     public struct Item
@@ -74,9 +74,9 @@ namespace PixelWorldsServer2.DataManagement
         public static bool IsWearable(int item)
         {
             Item it = GetByID(item);
-            var type = (ItemType)it.type;
+            var type = (InventoryItemType)it.type;
 
-            return type == ItemType.CLOTHING || type == ItemType.WEAPON || type == ItemType.FAMILIAR;
+            return type == InventoryItemType.WearableItem || type == InventoryItemType.Weapon || type == InventoryItemType.Familiar;
         }
 
         public static Item GetByName(string name)

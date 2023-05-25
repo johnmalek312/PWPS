@@ -136,6 +136,7 @@ namespace PixelWorldsServer2.DataManagement
             public const string BroadcastGlobalMessage = "BGM";
             public const string LeaveWorld = "LW";
             public const string AnotherPlayer = "AnP"; // used to send a spawn signal to other player(s).
+            public const string ChangeOrb = "ChangeBackground";
            
         }
     }

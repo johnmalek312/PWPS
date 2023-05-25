@@ -58,7 +58,7 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 if (!bObj.ContainsKey($"m{i}"))
                     throw new Exception($"Non existing message object failed to be accessed by index '{i}'!");
-
+                
                 BSONObject mObj = bObj[$"m{i}"] as BSONObject;
                 string mID = mObj[MsgLabels.MessageID];
                 if (mObj["ID"].stringValue != "mP") ReadBSON(mObj, Log: Util.LogClient);
@@ -243,8 +243,9 @@ namespace PixelWorldsServer2.Networking.Server
                     case MsgLabels.Ident.SyncTime:
                         HandleSyncTime(client);
                         break;
-
-
+                    case MsgLabels.Ident.ChangeOrb:
+                        HandleOrbChange(p, mObj);
+                        break;
                     default:
                         pServer.OnPing(client, 1);
                         break;
@@ -315,7 +316,7 @@ namespace PixelWorldsServer2.Networking.Server
             pd[MsgLabels.PlayerData.InventorySlots] = 400;
             pd[MsgLabels.PlayerData.ShowOnlineStatus] = true;
             pd[MsgLabels.PlayerData.ShowLocation] = true;
-
+           
             // pd["experienceAmount"] = 180000;
             // pd["xpAmount"] = 180000;
 
@@ -427,7 +428,7 @@ namespace PixelWorldsServer2.Networking.Server
                 };
 
                 client.SendMessageAsync(text: "```Economy Protector:```", embeds: new[] { embed.Build() });
-        }
+            }
 
 
         }
@@ -783,7 +784,8 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                if (Shop.ContainsItem(id))
+                                //if (Shop.ContainsItem(id))
+                                if(false)
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
@@ -1051,7 +1053,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 p.Send(ref pObj);
             }
-
+            
             p.Send(ref bObj);
         }
 
@@ -1131,7 +1133,7 @@ namespace PixelWorldsServer2.Networking.Server
                 default:
                     break;
             }
-
+      
 
             pObj["spots"] = spotsList;
             pObj["familiar"] = 0;
@@ -1164,9 +1166,9 @@ namespace PixelWorldsServer2.Networking.Server
             BSONObject cObj = new BSONObject("WCM");
 
             cObj[MsgLabels.ChatMessageBinary] = Util.CreateChatMessage("<color=#FFFF00>LTPS - #1 Pixel Worlds Server\nYou are able to purchase packs with gems, use /shop for more info!\nPlease login or register via commands only.\n",
-                    p.world.WorldName,
-                    p.world.WorldName,
-                    1,
+                 p.world.WorldName,
+                 p.world.WorldName,
+                 1,
                     "  --------------------\nWelcome to our server, If you need any help please join our discord server here: https://t.ly/wos5");
 
             p.Send(ref cObj);
@@ -1642,6 +1644,42 @@ namespace PixelWorldsServer2.Networking.Server
 
             client.Send(resp);
         }
+        
+        public void HandleOrbChange(Player p, BSONObject bObj)
+        {
+            int orb = bObj["bgT"].int32Value;
+            int blockType = (int)Config.getWeatherBlockType(orb);
+            var invItem = p.Data.Inventory.Get(blockType, (short)InventoryItemType.Consumable);
+
+            if (invItem == null)
+                return;
+
+            if (invItem.amount >= 1)
+            {
+                invItem.amount -= (short)1;
+                if (invItem.amount <= 0)
+                    p.Data.Inventory.Remove(invItem);
+                p.world.BackGroundType = (LayerBackgroundType)orb;
+            }
+        }
+        public void HandleWeatherChange(Player p, BSONObject bObj)
+        {
+            int orb = bObj["bgT"].int32Value;
+            int blockType = (int)Config.getWeatherBlockType(orb);
+            var invItem = p.Data.Inventory.Get(blockType);
+
+            if (invItem == null)
+                return;
+
+            if (invItem.amount >= 1)
+            {
+                invItem.amount -= (short)1;
+                if (invItem.amount <= 0)
+                    p.Data.Inventory.Remove(invItem);
+                p.world.BackGroundType = (LayerBackgroundType)orb;
+            }
+        }
+        private byte[] OnPacket(byte[] revBuffer, String from)
         {
             // Remove padding and load the bson.
             byte[] data = new byte[revBuffer.Length - 4];

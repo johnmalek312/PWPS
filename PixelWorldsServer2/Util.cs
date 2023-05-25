@@ -60,7 +60,7 @@ namespace PixelWorldsServer2
                 CheckInput();
 
                 string toLog = "";
-                List<KeyValuePair<string, TextType>> dict = new List<KeyValuePair<string, TextType>>(); 
+                List<KeyValuePair<string, TextType>> dict = new List<KeyValuePair<string, TextType>>();
                 while (logQueue.TryDequeue(out outLog))
                 {
                     toLog += "\n" + outLog.Key;
@@ -84,7 +84,7 @@ namespace PixelWorldsServer2
                         }
                         Console.WriteLine(key.Key);
                         Console.ForegroundColor = ConsoleColor.White;
-                        
+
                     }
                     File.AppendAllText("log.txt", toLog);
                     Console.Out.Flush();
@@ -117,7 +117,7 @@ namespace PixelWorldsServer2
             runningLogger = false;
             loggerThread.Join();
         }
-
+       
         public static bool IsFileReady(string filename)
         {
             // If the file can be opened for exclusive access it means that the file
@@ -227,7 +227,7 @@ namespace PixelWorldsServer2
                     if (arr.Length < 1)
                         continue;
 
-                    if (arr[0] == key && offset == cur)
+                    if (arr[0] == key && offset == cur) 
                     {
                         return arr.Skip(1).ToArray();
                     }
@@ -251,7 +251,7 @@ namespace PixelWorldsServer2
                     var tCode = Type.GetTypeCode(typeof(T));
                     switch (tCode)
                     {
-
+                      
                         case TypeCode.Double:
                             return (T)(object)double.Parse(v[0]);
 

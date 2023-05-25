@@ -88,7 +88,7 @@ namespace PixelWorldsServer2
             pData.Coins = (int)reader["ByteCoins"];
             pData.Name = (string)reader["Name"];
             pData.LastIP = (string)reader["IP"];
-            pData.adminStatus = (Player.AdminStatus)(Convert.ToInt32((Int64)reader["AdminStatus"]));
+            pData.adminStatus = (Player.AdminStatus)reader["AdminStatus"];
 
             object inven = reader["Inventory"];
             byte[] invData = null;
@@ -200,7 +200,7 @@ namespace PixelWorldsServer2
         public void Save()
         {
 
-            Util.Log("Saving player...");
+            //Util.Log("Saving player...");
 
             var sql = pServer.GetSQL();
             var cmd = sql.Make("UPDATE players SET " +
@@ -229,7 +229,7 @@ namespace PixelWorldsServer2
 
             if (sql.PreparedQuery(cmd) > 0)
             {
-                Util.Log($"Player ID: {Data.UserID} ('{Data.Name}') saved.");
+                //Util.Log($"Player ID: {Data.UserID} ('{Data.Name}') saved.");
             }
         }
     }

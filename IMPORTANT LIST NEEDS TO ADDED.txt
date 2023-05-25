@@ -1,0 +1,16 @@
+NEED FIXES ABOUT THIS:
+
+1- Save Player Inventory Set  ( needs to be definied have but idk where to add)
+2- Breaking Blocks gives Seeds of the type of block. (zKevz source have it needs to be added it to this source.)
+3- Auto Build World needs to changed. Needs to be added Bedrock Spawn , Granite , Grass , tree spawn etc.
+4- PWE Machine (hard but makeable with proxy i think)
+5- Real VIP Status + AUTO Level 125
+6- 1Hit Cheat Protect
+7- Door/Portal/Lock Data undefinied, needs to be added.
+8- Need Real WORLD LOCK OWNER STATUS (icon on name etc)
+9- Weather Save needs to be added (idk how but possible)
+10- Breaking block dropping gems amount need to be nerfed. (DONE)
+11- Need fix seeing global message after re-enter the world.
+
+some of theese is on zKevz source, need transfer them to this source.
+... idk more? soon
