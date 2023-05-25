@@ -858,6 +858,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (Shop.offers.ContainsKey(id))
             {
                 var s = Shop.offers[id];
+               
 
                 if (s.items != null)
                 {
@@ -1664,8 +1665,8 @@ namespace PixelWorldsServer2.Networking.Server
         }
         public void HandleWeatherChange(Player p, BSONObject bObj)
         {
-            int orb = bObj["bgT"].int32Value;
-            int blockType = (int)Config.getWeatherBlockType(orb);
+            int weather = bObj["bgT"].int32Value;
+            int blockType = (int)Config.getWeatherBlockType(weather);
             var invItem = p.Data.Inventory.Get(blockType);
 
             if (invItem == null)
@@ -1676,7 +1677,7 @@ namespace PixelWorldsServer2.Networking.Server
                 invItem.amount -= (short)1;
                 if (invItem.amount <= 0)
                     p.Data.Inventory.Remove(invItem);
-                p.world.BackGroundType = (LayerBackgroundType)orb;
+                p.world.BackGroundType = (LayerBackgroundType)weather;
             }
         }
         private byte[] OnPacket(byte[] revBuffer, String from)

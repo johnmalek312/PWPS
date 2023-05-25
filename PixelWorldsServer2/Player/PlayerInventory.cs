@@ -6,29 +6,6 @@ using System.Text;
 
 namespace PixelWorldsServer2
 {
-    public enum InventoryItemType : byte
-    {
-        // Token: 0x04000BED RID: 3053
-        Block,
-        // Token: 0x04000BEE RID: 3054
-        BlockBackground,
-        // Token: 0x04000BEF RID: 3055
-        Seed,
-        // Token: 0x04000BF0 RID: 3056
-        BlockWater,
-        // Token: 0x04000BF1 RID: 3057
-        WearableItem,
-        // Token: 0x04000BF2 RID: 3058
-        Weapon,
-        // Token: 0x04000BF3 RID: 3059
-        Throwable,
-        // Token: 0x04000BF4 RID: 3060
-        Consumable,
-        // Token: 0x04000BF5 RID: 3061
-        Shard,
-        // Token: 0x04000BF6 RID: 3062
-        Blueprint
-    }
     public enum ItemFlags
     {
         IS_SEED = 1 << 9,

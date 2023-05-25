@@ -9,16 +9,16 @@ namespace PixelWorldsServer2.Database
     public struct ShopResult
     {
         public int price;
-        public List<KeyValuePair<int, InventoryItemType>> items;
+        public List<KeyTriple<int, InventoryItemType, int>> items;
     }
     public class Shop
     {
         public static Dictionary<string, ShopResult> offers = new Dictionary<string, ShopResult>();
 
-        public static void AddShopOffer(string name, int price, params KeyValuePair<int, InventoryItemType>[] items)
+        public static void AddShopOffer(string name, int price, params KeyTriple<int, InventoryItemType, int>[] items)
         {
             ShopResult sr = new ShopResult();
-            sr.items = new List<KeyValuePair<int, InventoryItemType>>(items);
+            sr.items = new List<KeyTriple<int, InventoryItemType, int>>(items);
             sr.price = price;
 
             offers[name] = sr;
@@ -37,7 +37,7 @@ namespace PixelWorldsServer2.Database
 
         public static void Init()
         {
-            AddShopOffer("WorldLock", 3500, new KeyValuePair<int, InventoryItemType>(413, InventoryItemType.Block));
+            AddShopOffer("WorldLock", 3500, new KeyTriple<int, InventoryItemType, int>(413, InventoryItemType.Block, 1));
             AddShopOffer("PlatinumLock", 3500 * 100, InventoryItemType.Block, 796);
             AddShopOffer("PetFoodDogPremium", 1250, InventoryItemType.Block, 3856);
             AddShopOffer("SmallLock", 100, InventoryItemType.Block, 410);
