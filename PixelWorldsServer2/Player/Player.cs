@@ -119,7 +119,7 @@ namespace PixelWorldsServer2
             }
             pData.Inventory = new Dictionary<int, short>();
             inventoryManager = new PlayerInventoryManager(this);
-            this.inventoryManager.RegularDefaultInventory();
+            this.inventoryManager.InitInventoryFromBinary((byte[])inven);
         }
 
         public FeatherClient Client { get { return fClient; } }
