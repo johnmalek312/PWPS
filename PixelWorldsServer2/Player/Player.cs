@@ -89,7 +89,7 @@ namespace PixelWorldsServer2
             pData.Coins = (int)reader["ByteCoins"];
             pData.Name = (string)reader["Name"];
             pData.LastIP = (string)reader["IP"];
-            pData.adminStatus = (Player.AdminStatus)reader["AdminStatus"];
+            pData.adminStatus = (Player.AdminStatus)Convert.ToInt32(reader["AdminStatus"]);
             object inven = reader["Inventory"];
             byte[] invData = null;
 

@@ -791,8 +791,7 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                //if (Shop.ContainsItem(id))
-                                if(false)
+                                if (Shop.ContainsItem(id) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
