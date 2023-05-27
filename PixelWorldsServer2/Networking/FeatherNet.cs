@@ -204,8 +204,7 @@ namespace FeatherNet
                     for (int i = 0; i < outgoingPackets.Count; i++)
                     {
 
-
-                        MessageHandler.ReadBSON(outgoingPackets[i]);
+                        if (outgoingPackets[i]["ID"].stringValue != "mP" && outgoingPackets[i]["ID"].stringValue != "ST")MessageHandler.ReadBSON(outgoingPackets[i]);
                         if (outgoingPackets[i]["ID"].stringValue == "GWC")
                         {
                             MessageHandler.ReadBSON(SimpleBSON.Load(Util.LZMAHelper.DecompressLZMA(outgoingPackets[i]["W"].binaryValue)));

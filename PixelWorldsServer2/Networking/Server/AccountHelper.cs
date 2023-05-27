@@ -63,13 +63,15 @@ namespace PixelWorldsServer2.Networking.Server
                 var p = new Player();
                 p.Data.player = p;
                 p.Data.UserID = (uint)sql.GetLastInsertID();
+                p.Data.Inventory = new Dictionary<int, short>();
                 p.Data.CognitoID = cogID;
                 p.Data.Token = cogToken;
                 p.Data.Name = name;
                 p.Data.LastIP = ip;
                 p.pSettings = new PlayerSettings();
-                p.Data.Inventory = new PlayerInventory();
                 p.Data.adminStatus = (Player.AdminStatus)adminStatus;
+                p.inventoryManager = new PlayerInventoryManager(p);
+                p.inventoryManager.RegularDefaultInventory();
 
                 return p;
             }

@@ -318,7 +318,6 @@ namespace Kernys.Bson
 			return bsonarray;
 		}
 
-		// Token: 0x06001F5D RID: 8029 RVA: 0x000CCA0C File Offset: 0x000CAE0C
 		public static implicit operator BSONValue(List<string> v)
 		{
 			BSONArray bsonarray = new BSONArray();
@@ -329,7 +328,6 @@ namespace Kernys.Bson
 			return bsonarray;
 		}
 
-		// Token: 0x06001F5E RID: 8030 RVA: 0x000CCA4C File Offset: 0x000CAE4C
 		public static implicit operator BSONValue(List<Vector2i> v)
 		{
 			byte[] array = new byte[v.Count * 8];

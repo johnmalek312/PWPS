@@ -15,6 +15,7 @@ using Discord.Webhook;
 using static PixelWorldsServer2.World.WorldSession;
 using static PixelWorldsServer2.World.WorldInterface;
 using static PixelWorldsServer2.Player;
+using static FeatherNet.FeatherEvent;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -29,8 +30,8 @@ namespace PixelWorldsServer2.Networking.Server
         private List<WorldSession> worlds = new List<WorldSession>();
         public List<WorldSession> GetWorlds() => worlds;
 
-        private List<InventoryItem> itemList = new List<InventoryItem>();
-        public List<InventoryItem> Items => itemList;
+        private List<InventoryKey> itemList = new List<InventoryKey>();
+        public List<InventoryKey> Items => itemList;
 
 
         public void ProcessBSONPacket(FeatherClient client, BSONObject bObj)
@@ -61,7 +62,8 @@ namespace PixelWorldsServer2.Networking.Server
                 
                 BSONObject mObj = bObj[$"m{i}"] as BSONObject;
                 string mID = mObj[MsgLabels.MessageID];
-                if (mObj["ID"].stringValue != "mP") ReadBSON(mObj, Log: Util.LogClient);
+                if (mObj["ID"].stringValue != "mP" && mObj["ID"].stringValue != "ST") 
+                    ReadBSON(mObj, Log: Util.LogClient);
 
                 switch (mID)
                 {
@@ -213,7 +215,9 @@ namespace PixelWorldsServer2.Networking.Server
                     case "Di":
                         HandleDropItem(p, mObj);
                         break;
-
+                    case MsgLabels.Ident.RemoveInventoryItem:
+                        HandleTrashItem(p, mObj);
+                        break;
                     case "mp":
                         // Not sure^^
                         break;
@@ -245,6 +249,9 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
                     case MsgLabels.Ident.ChangeOrb:
                         HandleOrbChange(p, mObj);
+                        break;
+                    case MsgLabels.Ident.ChangeWeather:
+                        HandleWeatherChange(p, mObj);
                         break;
                     default:
                         pServer.OnPing(client, 1);
@@ -323,14 +330,14 @@ namespace PixelWorldsServer2.Networking.Server
 
 
 
-            if (p.Data.Inventory.Items.Count == 0)
+            if (p.Data.Inventory.Count == 0)
             {
-                p.Data.Inventory.InitFirstSetup();
+                p.inventoryManager.RegularDefaultInventory();
             }
 
             pd["xpAmount"] = 599;
             pd["experienceAmount"] = 100;
-            pd["inv"] = p.Data.Inventory.Serialize();
+            pd["inv"] = p.inventoryManager.GetInventoryAsBinary();
             pd["tutorialState"] = 3;
             resp["rUN"] = p.Data.Name;
             resp["pD"] = SimpleBSON.Dump(pd);
@@ -349,7 +356,7 @@ namespace PixelWorldsServer2.Networking.Server
         public string HandleCommandClearInventory(Player p)
 
         {
-            p.Data.Inventory.Items.Clear();
+            p.inventoryManager.ClearInventory();
             BSONObject r = new BSONObject("DR");
             p.Send(ref r);
 
@@ -634,7 +641,7 @@ namespace PixelWorldsServer2.Networking.Server
                         {
                             res = "Bought Wings Pack for 100.000 Gems!";
                             p.RemoveGems(100000);
-                            p.Data.Inventory.wingsPack();
+                            p.inventoryManager.wingsPack();
                             BSONObject aws = new BSONObject("DR");
                             p.Send(ref aws);
                             
@@ -653,7 +660,7 @@ namespace PixelWorldsServer2.Networking.Server
                         {
                             res = "Bought VIP Pack for 75000 Gems!";
                             p.RemoveGems(75000);
-                            p.Data.Inventory.vipEsyaVer();
+                            p.inventoryManager.vipEsyaVer();
                             BSONObject awsa = new BSONObject("DR");
                             p.Send(ref awsa);
 
@@ -672,7 +679,7 @@ namespace PixelWorldsServer2.Networking.Server
                             res = "Bought Mod Pack for 5000000 Gems!";
                             p.RemoveGems(5000000);
                             p.pSettings.Set(PlayerSettings.Bit.SET_MOD);
-                            p.Data.Inventory.modPack();
+                            p.inventoryManager.modPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
 
@@ -690,7 +697,7 @@ namespace PixelWorldsServer2.Networking.Server
                         {
                             res = "Bought Hand Pack for 75000 Gems!";
                             p.RemoveGems(75000);
-                            p.Data.Inventory.handPack();
+                            p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
 
@@ -755,7 +762,7 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/vipitems":
-                            p.Data.Inventory.vipEsyaVer();
+                            p.inventoryManager.vipEsyaVer();
                             res = "Added 201 Each VIP items to your inventory.";
                             BSONObject aw = new BSONObject("DR");
                             p.Send(ref aw);
@@ -790,7 +797,7 @@ namespace PixelWorldsServer2.Networking.Server
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
                                 }
-                                p.world.Drop(id, 25, p.Data.PosX, p.Data.PosY);
+                                p.world.Drop(id, 25, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
 
                                 res = @$"Given 25 {it.name}  (ID {id}).";
 
@@ -864,11 +871,11 @@ namespace PixelWorldsServer2.Networking.Server
                 {
                     if (p.Data.Gems >= s.price)
                     {
-                        bObj["IPRs"] = s.items;
+                        bObj["IPRs"] = s.items.SelectMany(item => Enumerable.Repeat(item.Key, item.Value2)).ToList();
 
                         foreach (var item in s.items)
                         {
-                            p.Data.Inventory.Add(new InventoryItem((short)item));
+                            p.inventoryManager.AddItemToInventory((BlockType)item.Key, item.Value1, (short)item.Value2);
                         }
 
                         p.RemoveGems(s.price);
@@ -1256,10 +1263,10 @@ namespace PixelWorldsServer2.Networking.Server
             resp["ID"] = "C";
             resp["CollectableID"] = colID;
 
-            var c = p.world.collectables[colID];
+            WorldInterface.Collectable c = p.world.collectables[colID];
             resp["BlockType"] = c.item;
             resp["Amount"] = c.amt; // HACK
-            resp["InventoryType"] = ItemDB.GetByID(c.item).type;
+            resp["InventoryType"] = c.type;
             resp["PosX"] = c.posX;
             resp["PosY"] = c.posY;
             resp["IsGem"] = c.gemType > -1;
@@ -1267,8 +1274,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             if (c.gemType < 0)
             {
-                p.Data.Inventory.Add(new InventoryItem((short)c.item,
-                ItemDB.IsWearable(c.item) ? (short)ItemFlags.IS_WEARABLE : (short)0, c.amt));
+                p.inventoryManager.AddItemToInventory((BlockType)c.item, (InventoryItemType)c.type, c.amt);
             }
             else
             {
@@ -1406,7 +1412,7 @@ namespace PixelWorldsServer2.Networking.Server
                     double pX = x / Math.PI, pY = y / Math.PI;
 
                     for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(3));
+                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
          
                 }
 
@@ -1458,12 +1464,12 @@ namespace PixelWorldsServer2.Networking.Server
                     if (tile.fg.id == (short)WorldInterface.BlockType.LockWorld)
                     {
                         w.OwnerID = 0;
-                        w.Drop(tile.fg.id, 1, pX, pY);
+                        w.Drop(tile.fg.id, 1, pX, pY, 0);
                         HandleCollect(p, w.colID);
                     }
 
                     for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), Util.rand.Next(3));
+                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0,Util.rand.Next(3));
 
                     
                     tile.fg.id = 0;
@@ -1486,15 +1492,13 @@ namespace PixelWorldsServer2.Networking.Server
 
             int x = bObj["x"], y = bObj["y"];
             short blockType = (short)bObj["BlockType"];
+            Item it = ItemDB.GetByID(blockType);
 
             if (blockType == 273)
                 return;
 
-            var invIt = p.Data.Inventory.Get(blockType);
-            if (invIt == null)
-                return;
-
-            if (invIt.amount <= 0)
+            var invIt = p.inventoryManager.HasItemAmountInInventory((BlockType)blockType, (InventoryItemType)it.type);
+            if (!invIt)
                 return;
 
             if ((p.world.OwnerID > 0 && p.world.OwnerID != p.Data.UserID))
@@ -1506,7 +1510,6 @@ namespace PixelWorldsServer2.Networking.Server
             if ((BlockType)blockType == BlockType.LockWorld)
                 p.world.OwnerID = p.Data.UserID; // set world owner!
 
-            Item it = ItemDB.GetByID(blockType);
             bObj["U"] = p.Data.UserID.ToString("X8");
 
             switch (it.type)
@@ -1536,7 +1539,7 @@ namespace PixelWorldsServer2.Networking.Server
                     }
             }
 
-            p.Data.Inventory.Remove(new InventoryItem(blockType));
+            p.inventoryManager.RemoveItemsFromInventory((BlockType)blockType, 0);
         }
 
         public void HandleSetBackgroundBlock(Player p, BSONObject bObj)
@@ -1559,11 +1562,8 @@ namespace PixelWorldsServer2.Networking.Server
             short blockType = (short)bObj["BlockType"];
             Item it = ItemDB.GetByID(blockType);
 
-            var invIt = p.Data.Inventory.Get(blockType);
-            if (invIt == null)
-                return;
-
-            if (invIt.amount <= 0)
+            var invIt = p.inventoryManager.HasItemAmountInInventory((BlockType)blockType, (InventoryItemType)1);
+            if (!invIt)
                 return;
 
             bObj["U"] = p.Data.UserID.ToString("X8");
@@ -1576,7 +1576,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             w.Broadcast(ref bObj);
 
-            p.Data.Inventory.Remove(new InventoryItem(blockType));
+            p.inventoryManager.RemoveItemsFromInventory((BlockType)blockType, (InventoryItemType)1);
         }
 
         public void HandleDropItem(Player p, BSONObject bObj)
@@ -1586,25 +1586,45 @@ namespace PixelWorldsServer2.Networking.Server
 
             if (p.world == null)
                 return;
-
             BSONObject dObj = bObj["dI"] as BSONObject;
 
-            int blockType = dObj["BlockType"];
+            BlockType blockType = (BlockType) dObj["BlockType"].int32Value;
             int amount = dObj["Amount"];
+            int type = dObj["InventoryType"];
+            double x = Convert.ToDouble(bObj["x"].int32Value) / Math.PI;
+            double y = Convert.ToDouble(bObj["y"].int32Value)/Math.PI;
 
-            var invItem = p.Data.Inventory.Get(blockType);
+            var invItem = p.inventoryManager.HasItemAmountInInventory(blockType, (InventoryItemType)type, (short)amount);
 
-            if (invItem == null)
+            if (!invItem)
                 return;
 
-            if (invItem.amount >= amount)
-            {
-                invItem.amount -= (short)amount;
-                if (invItem.amount <= 0)
-                    p.Data.Inventory.Remove(invItem);
+            p.inventoryManager.RemoveItemsFromInventory(blockType, (InventoryItemType)type, (short)amount);
+            p.SendRemoveItemInventory(blockType, (InventoryItemType)type, amount);
+            p.world.Drop((int)blockType, amount, x - 0.1 + Util.rand.NextDouble(0, 0.2), y - 0.1 + Util.rand.NextDouble(0, 0.2), type, -1);
+            
+        }
+        public void HandleTrashItem(Player p, BSONObject bObj)
+        {
+            if (p == null)
+                return;
 
-                p.world.Drop(blockType, amount, p.Data.PosX - 0.32d, p.Data.PosY);
-            }
+            if (p.world == null)
+                return;
+            BSONObject dObj = bObj["dI"] as BSONObject;
+
+            BlockType blockType = (BlockType)dObj["BlockType"].int32Value;
+            int amount = dObj["Amount"];
+            int type = dObj["InventoryType"];
+
+            var invItem = p.inventoryManager.HasItemAmountInInventory(blockType, (InventoryItemType)type, (short)amount);
+
+            if (!invItem)
+                return;
+
+            p.inventoryManager.RemoveItemsFromInventory(blockType, (InventoryItemType)type, (short)amount);
+            p.SendRemoveItemInventory(blockType, (InventoryItemType)type, amount);
+
         }
 
         public void HandleMovePlayer(Player p, BSONObject bObj)
@@ -1649,36 +1669,39 @@ namespace PixelWorldsServer2.Networking.Server
         public void HandleOrbChange(Player p, BSONObject bObj)
         {
             int orb = bObj["bgT"].int32Value;
-            int blockType = (int)Config.getWeatherBlockType(orb);
-            var invItem = p.Data.Inventory.Get(blockType, (short)InventoryItemType.Consumable);
-
-            if (invItem == null)
-                return;
-
-            if (invItem.amount >= 1)
+            BlockType blockType = Config.getOrbBlockType(orb);
+            bool invItem = p.inventoryManager.HasItemAmountInInventory(blockType, InventoryItemType.Consumable);
+            if(invItem)
             {
-                invItem.amount -= (short)1;
-                if (invItem.amount <= 0)
-                    p.Data.Inventory.Remove(invItem);
+                p.inventoryManager.RemoveItemsFromInventory(blockType, InventoryItemType.Consumable, 1);
                 p.world.BackGroundType = (LayerBackgroundType)orb;
             }
+            p.SendRemoveItemInventory(blockType, InventoryItemType.Consumable, 1);
+            BSONObject wObj = new BSONObject();
+            wObj["ID"] = "ChangeBackground";
+            wObj["bgT"] = orb;
+            wObj["U"] = p.Data.UserID.ToString("X8");
+            p.world.Broadcast(ref wObj);
+
+
         }
         public void HandleWeatherChange(Player p, BSONObject bObj)
         {
-            int weather = bObj["bgT"].int32Value;
-            int blockType = (int)Config.getWeatherBlockType(weather);
-            var invItem = p.Data.Inventory.Get(blockType);
-
-            if (invItem == null)
-                return;
-
-            if (invItem.amount >= 1)
+            int weather = bObj["wto"].int32Value;
+            BlockType blockType = Config.getWeatherBlockType(weather);
+            bool invItem = p.inventoryManager.HasItemAmountInInventory(blockType, InventoryItemType.Consumable);
+            if (invItem)
             {
-                invItem.amount -= (short)1;
-                if (invItem.amount <= 0)
-                    p.Data.Inventory.Remove(invItem);
-                p.world.BackGroundType = (LayerBackgroundType)weather;
+                p.inventoryManager.RemoveItemsFromInventory(blockType, InventoryItemType.Consumable, 1);
+                p.world.WeatherType = (WeatherType)weather;
             }
+            p.SendRemoveItemInventory(blockType, InventoryItemType.Consumable, 1);
+            BSONObject wObj = new BSONObject();
+            wObj["ID"] = "CWWoq";
+            wObj["wto"] = weather;
+            wObj["U"] = p.Data.UserID.ToString("X8");
+            p.world.Broadcast(ref wObj);
+
         }
         private byte[] OnPacket(byte[] revBuffer, String from)
         {
@@ -1773,7 +1796,7 @@ namespace PixelWorldsServer2.Networking.Server
                             break;
                         default:
                             Log($"{Parent} = {Key} | {Packet.valueType}");
-                            ReadBSON((BSONObject)Packet, Key);
+                            ReadBSON((BSONObject)Packet, Key, Log);
                             //Log(BitConverter.ToString(ObjectToByteArray(((Object)Packet))));
 
                             break;

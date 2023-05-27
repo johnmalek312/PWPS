@@ -94,14 +94,14 @@ namespace PixelWorldsServer2.World
             }
         }
 
-        public void Drop(int id, int amt, double posX, double posY, int gem = -1)
+        public void Drop(int id, int amt, double posX, double posY, int type, int gem = -1)
         {
             int cId = ++colID;
             BSONObject cObj = new BSONObject("nCo");
             cObj["CollectableID"] = cId;
             cObj["BlockType"] = id;
             cObj["Amount"] = amt;
-            cObj["InventoryType"] = gem < 0 ? ItemDB.GetByID(id).type : 0;
+            cObj["InventoryType"] = type;
 
             Collectable c = new Collectable();
             c.amt = (short)amt;
@@ -109,6 +109,7 @@ namespace PixelWorldsServer2.World
             c.posX = posX * Math.PI;
             c.posY = posY * Math.PI;
             c.gemType = (short)gem;
+            c.type = (short)type;
 
             cObj["PosX"] = c.posX;
             cObj["PosY"] = c.posY;
@@ -161,7 +162,7 @@ namespace PixelWorldsServer2.World
 
             using (MemoryStream ms = new MemoryStream())
             {
-                ms.WriteByte(0x1); // version
+                ms.WriteByte(0x2); // version
                 ms.Write(BitConverter.GetBytes(OwnerID));
 
                 for (int y = 0; y < GetSizeY(); y++)
@@ -186,6 +187,7 @@ namespace PixelWorldsServer2.World
                     ms.Write(BitConverter.GetBytes(col.posX));
                     ms.Write(BitConverter.GetBytes(col.posY));
                     ms.Write(BitConverter.GetBytes(col.gemType));
+                    ms.Write(BitConverter.GetBytes(col.type));
                 }
                 ms.Write(BitConverter.GetBytes((int)BackGroundType));
                 ms.Write(BitConverter.GetBytes((int)WeatherType));
@@ -404,8 +406,16 @@ namespace PixelWorldsServer2.World
                 c.posX = BitConverter.ToDouble(binary, pos + 4);
                 c.posY = BitConverter.ToDouble(binary, pos + 12);
                 c.gemType = BitConverter.ToInt16(binary, pos + 20);
+                if (version == 0x2)
+                {
+                    c.type = BitConverter.ToInt16(binary, pos + 22);
+                    pos += 24;
+                }
+                else
+                {
+                    c.type = ItemDB.GetByID(c.item).type;
+                }
                 collectables[++colID] = c;
-                pos += 22;
             }
             if(pos < binary.Length)
             {

@@ -10003,13 +10003,14 @@ namespace PixelWorldsServer2.World
 			public short amt;
 			public double posX, posY;
 			public short gemType; // over -1: is a gem as well and has a type.
+            public short type;
 
-			public BSONObject GetAsBSON()
+            public BSONObject GetAsBSON()
             {
 				var bObj = new BSONObject();
 				bObj["BlockType"] = item;
 				bObj["Amount"] = amt; // HACK
-				bObj["InventoryType"] = ItemDB.GetByID(item).type;
+				bObj["InventoryType"] = type;
 				bObj["PosX"] = posX;
 				bObj["PosY"] = posY;
 				bObj["IsGem"] = gemType > -1;
@@ -10018,6 +10019,5 @@ namespace PixelWorldsServer2.World
 			}
         }
 
-		public BSONObject Serialize();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using PixelWorldsServer2.DataManagement;
+using PixelWorldsServer2.World;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,180 +12,159 @@ namespace PixelWorldsServer2
         IS_SEED = 1 << 9,
         IS_WEARABLE = 1 << 10
     }
-    public class InventoryItem
-    {
-        public short itemID;
-        public short flags;
-        public short amount;
 
-        public InventoryItem(short itemID = 0, short flags = 0, short amount = 1)
+    public struct InventoryKey : IEquatable<InventoryKey>
+    {
+
+        public InventoryKey(WorldInterface.BlockType bt, InventoryItemType itt)
         {
-            this.itemID = itemID;
-            this.flags = flags;
-            this.amount = amount;
+            this.blockType = bt;
+            this.itemType = itt;
         }
+
+
+        public static int InventoryKeyToInt(InventoryKey ik)
+        {
+            return InventoryKey.BlockTypeAndInventoryItemTypeToInt(ik.blockType, ik.itemType);
+        }
+
+
+        public static int BlockTypeAndInventoryItemTypeToInt(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType)
+        {
+            return (int)((WorldInterface.BlockType)((int)inventoryItemType << 24) | blockType);
+        }
+
+
+        public static InventoryKey IntToInventoryKey(int asInt)
+        {
+            return new InventoryKey((WorldInterface.BlockType)(asInt & 16777215), (InventoryItemType)(asInt >> 24));
+        }
+
+        public bool Equals(InventoryKey other)
+        {
+            return this.blockType == other.blockType && this.itemType == other.itemType;
+        }
+
+        public override bool Equals(object other)
+        {
+            return other is InventoryKey && this.Equals((InventoryKey)other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)((WorldInterface.BlockType)((int)this.itemType << 24) | this.blockType);
+        }
+
+        public static bool operator ==(InventoryKey lhs, object rhs)
+        {
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(InventoryKey lhs, object rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public static InventoryKey GetNoneBlockKey()
+        {
+            return new InventoryKey(WorldInterface.BlockType.None, InventoryItemType.Block);
+        }
+
+        public static List<int> GetInventoryKeysAsIntList(List<InventoryKey> iks)
+        {
+            List<int> list = new List<int>(iks.Count);
+            for (int i = 0; i < iks.Count; i++)
+            {
+                list.Add(InventoryKey.InventoryKeyToInt(iks[i]));
+            }
+            return list;
+        }
+
+        public static List<InventoryKey> IntListToInventoryKeyList(List<int> intList)
+        {
+            List<InventoryKey> list = new List<InventoryKey>(intList.Count);
+            for (int i = 0; i < intList.Count; i++)
+            {
+                list.Add(InventoryKey.IntToInventoryKey(intList[i]));
+            }
+            return list;
+        }
+
+        public override string ToString()
+        {
+            return this.blockType.ToString() + " " + this.itemType.ToString();
+        }
+
+        public WorldInterface.BlockType blockType;
+
+        public InventoryItemType itemType;
+
+        private const int magicValue = 24;
     }
-    public class PlayerInventory
+
+
+    public class PlayerInventoryManager
     {
 
-        private List<InventoryItem> itemList = new List<InventoryItem>();
-        public List<InventoryItem> Items => itemList;
+        private List<InventoryKey> itemList = new List<InventoryKey>();
+        public List<InventoryKey> Items => itemList;
 
         public Animation.HotSpots[] AnimHotSpots;
 
-        public InventoryItem Get(int id, short flags = 0)
+        public Player p;
+        public PlayerInventoryManager(Player pl)
         {
-            foreach (InventoryItem i in itemList)
-            {
-                if (i.itemID == id && i.flags == flags)
-                    return i;
-            }
-
-            return null;
+            p = pl;
         }
 
-        public PlayerInventory(byte[] data = null)
-        {
-            if (data == null)
-                return;
-
-            AnimHotSpots = new Animation.HotSpots[(int)Animation.HotSpots.END_OF_THE_ENUM + 1];
-
-            Load(data);
-        }
-
-        // 0: success, -1 any error, higher than 0: left to be handled.
-        public int Add(InventoryItem invItem)
-        {
-            var item = Get(invItem.itemID, invItem.flags);
-
-            if (item == null)
-            {
-                Items.Add(invItem);
-                return 0;
-            }
-
-            item.amount += invItem.amount;
-
-            if (item.amount > 999)
-            {
-                int h = item.amount - 999;
-                item.amount = 999;
-                return h;
-            }
-
-            return 0;
-        }
-
-        public int Remove(InventoryItem invItem)
-        {
-            var item = Get(invItem.itemID, invItem.flags);
-
-            if (item == null)
-                return -1;
-
-            if (item.amount <= 1)
-            {
-                Items.Remove(item);
-                return 0;
-            }
-
-            item.amount -= invItem.amount;
-            return invItem.amount;
-        }
-
-        public byte[] Serialize()
-        {
-            using (var stream = new MemoryStream())
-            {
-                using (var bw = new BinaryWriter(stream))
-                {
-                    foreach (var item in Items)
-                    {
-                        bw.Write(item.itemID);
-                        bw.Write(item.flags);
-                        bw.Write(item.amount);
-                    }
-                }
-
-                return stream.ToArray();
-            }
-        }
-
-        public void Load(byte[] data)
-        {
-            if (data.Length % 6 != 0)
-            {
-                Util.Log("Inventory data doesn't have correct length?! May be corrupted!!");
-                return;
-            }
-
-            int items = data.Length / 6;
-            using (var stream = new MemoryStream(data))
-            {
-                using (var bw = new BinaryReader(stream))
-                {
-                    for (int i = 0; i < items; i++)
-                    {
-                        short id = bw.ReadInt16();
-                        short flags = bw.ReadInt16();
-                        short amount = bw.ReadInt16();
-
-                        Items.Add(new InventoryItem(id, flags, amount));
-                    }
-                }
-            }
-        }
         public void vipEsyaVer()
         {
-
             // Mağzadaki alınamayan vip itemleri adminlere özel verme komutu (beta)
-            Items.Add(new InventoryItem(934, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(935, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(1293, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(881, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(3086, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(3085, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(3087, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(3088, (short)ItemFlags.IS_WEARABLE, 201));
-            Items.Add(new InventoryItem(3824, (short)ItemFlags.IS_WEARABLE, 25));
+            this.AddItemToInventory((WorldInterface.BlockType)934, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)935, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)1293, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)881, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)3086, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)3085, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)3087, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)3088, InventoryItemType.WearableItem, 201);
+            this.AddItemToInventory((WorldInterface.BlockType)3824, InventoryItemType.WearableItem, 25);
 
         }
 
         public void wingsPack()
         {
-
             // wings pack
-            Items.Add(new InventoryItem(608, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(1350, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(2292, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(1298, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(4268, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(3481, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(4768, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(4197, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(2608, (short)ItemFlags.IS_WEARABLE, 25));
+            this.AddItemToInventory((WorldInterface.BlockType)608, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)1350, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)2292, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)1298, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)4268, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)3481, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)4768, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)4197, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)2608, InventoryItemType.WearableItem, 25);
         }
 
         public void modPack()
         {
 
             // Mod pack
-            Items.Add(new InventoryItem(2096, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(1038, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(794, (short)ItemFlags.IS_WEARABLE, 1));
+            this.AddItemToInventory((WorldInterface.BlockType)2096, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1038, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)794, InventoryItemType.WearableItem, 1);
         }
 
-        public void handPack()
+        public Dictionary<int, short> handPack()
         {
-
-            // Hand
-            Items.Add(new InventoryItem(4762, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(3482, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(4281, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(1306, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(1305, (short)ItemFlags.IS_WEARABLE, 25));
-            Items.Add(new InventoryItem(2293, (short)ItemFlags.IS_WEARABLE, 25));
+            Dictionary<int, short> inv = new Dictionary<int, short>();
+            this.AddItemToInventory((WorldInterface.BlockType)4762, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)3482, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)4281, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.WearableItem, 25);
+            return inv;
         }
 
 
@@ -192,39 +172,207 @@ namespace PixelWorldsServer2
 
 
 
-        public void InitFirstSetup()
+        public void RegularDefaultInventory()
         {
             // bunch of cool items
-            Items.Add(new InventoryItem(750, 0, 999));
-            Items.Add(new InventoryItem(4265, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4267, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4269, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(2152, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(3176, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(592, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(2275, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(2358, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4879, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4880, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4882, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4890, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4891, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4893, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4894, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4895, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4896, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4897, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4898, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4899, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4900, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4901, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4902, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4903, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4904, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4905, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4906, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(4907, (short)ItemFlags.IS_WEARABLE, 1));
-            Items.Add(new InventoryItem(3482, (short)ItemFlags.IS_WEARABLE, 1));
+            this.AddItemToInventory((WorldInterface.BlockType)750, InventoryItemType.Consumable, 999);
+            this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 999);
+            this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4267, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4269, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2152, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3176, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)592, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2275, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2358, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4879, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4880, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4882, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4890, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4891, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4893, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4894, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4895, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4896, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4897, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4898, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4899, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4900, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4901, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4902, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4903, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4904, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4905, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4906, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4907, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3482, InventoryItemType.WearableItem, 1);
+        }
+
+
+        public void AddItemToInventory(InventoryKey ik, short addAmount = 1)
+        {
+            this.AddItemToInventory(ik.blockType, ik.itemType, addAmount);
+        }
+
+
+        // Token: 0x06000DD5 RID: 3541 RVA: 0x00046AF4 File Offset: 0x00044EF4
+        public void AddItemToInventory(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType, short addAmount = 1)
+        {
+            if (addAmount < 1)
+            {
+                return;
+            }
+            int num = InventoryKey.BlockTypeAndInventoryItemTypeToInt(blockType, inventoryItemType);
+            if (p.Data.Inventory.ContainsKey(num))
+            {
+                p.Data.Inventory[num] = (short)(p.Data.Inventory[num] + addAmount);
+            }
+            else
+            {
+                p.Data.Inventory[num] = addAmount;
+            }
+        }
+
+        // Token: 0x06000DDB RID: 3547 RVA: 0x00046D2E File Offset: 0x0004512E
+        public void RemoveItemsFromInventory(InventoryKey inventoryKey, short amount = 1)
+        {
+            this.RemoveItemsFromInventory(inventoryKey.blockType, inventoryKey.itemType, amount);
+        }
+
+        public void RemoveItemsFromInventory(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType, short amount = 1)
+        {
+            if (amount < 1)
+            {
+                return;
+            }
+            int key = InventoryKey.BlockTypeAndInventoryItemTypeToInt(blockType, inventoryItemType);
+            if (p.Data.Inventory.ContainsKey(key))
+            {
+                short num = (short)(p.Data.Inventory[key] - amount);
+                if (num > 0)
+                {
+                    p.Data.Inventory[key] = num;
+                }
+                else
+                {
+                    p.Data.Inventory.Remove(key);
+                }
+            }
+        }
+
+        // Token: 0x06000DDF RID: 3551 RVA: 0x00046DE0 File Offset: 0x000451E0
+        public bool HasItemAmountInInventory(InventoryKey inventoryKey, short amount = 1)
+        {
+            WorldInterface.BlockType blockType = inventoryKey.blockType;
+            InventoryItemType itemType = inventoryKey.itemType;
+            int key = InventoryKey.BlockTypeAndInventoryItemTypeToInt(blockType, itemType);
+            if (p.Data.Inventory.ContainsKey(key))
+            {
+                int num = (int)p.Data.Inventory[key];
+                if (num >= (int)amount)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Token: 0x06000DE0 RID: 3552 RVA: 0x00046E30 File Offset: 0x00045230
+        public bool HasItemAmountInInventory(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType, short amount=1)
+        {
+            int key = InventoryKey.BlockTypeAndInventoryItemTypeToInt(blockType, inventoryItemType);
+            if (p.Data.Inventory.ContainsKey(key))
+            {
+                int num = (int)p.Data.Inventory[key];
+                if (num >= (int)amount)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Token: 0x06000DE1 RID: 3553 RVA: 0x00046E70 File Offset: 0x00045270
+        public short GetCount(InventoryKey inventoryKey)
+        {
+            int key = InventoryKey.InventoryKeyToInt(inventoryKey);
+            if (p.Data.Inventory.ContainsKey(key))
+            {
+                return p.Data.Inventory[key];
+            }
+            return 0;
+        }
+
+        // Token: 0x06000DE2 RID: 3554 RVA: 0x00046EA4 File Offset: 0x000452A4
+        public Dictionary<InventoryKey, short> GetCounts()
+        {
+            Dictionary<InventoryKey, short> dictionary = new Dictionary<InventoryKey, short>();
+            foreach (KeyValuePair<int, short> keyValuePair in p.Data.Inventory)
+            {
+                dictionary[InventoryKey.IntToInventoryKey(keyValuePair.Key)] = keyValuePair.Value;
+            }
+            return dictionary;
+        }
+
+
+        // Token: 0x06000DE4 RID: 3556 RVA: 0x00046FA0 File Offset: 0x000453A0
+        public bool IsItemAvailable(InventoryKey inventoryKey)
+        {
+            return this.IsItemAvailable(inventoryKey.blockType, inventoryKey.itemType);
+        }
+
+        // Token: 0x06000DE5 RID: 3557 RVA: 0x00046FB6 File Offset: 0x000453B6
+        public bool IsItemAvailable(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType)
+        {
+            return p.Data.Inventory.ContainsKey(InventoryKey.BlockTypeAndInventoryItemTypeToInt(blockType, inventoryItemType));
+        }
+        // Token: 0x06000DE7 RID: 3559 RVA: 0x0004700D File Offset: 0x0004540D
+        public bool CanTransfer(InventoryKey inventoryKey, short amount)
+        {
+            return 0 < amount && amount <= this.GetCount(inventoryKey);
+        }
+        public byte[] GetInventoryAsBinary()
+        {
+            int num = 6;
+            if (p.Data.Inventory == null || p.Data.Inventory.Count < 1)
+            {
+                return new byte[]
+                {
+                1
+                };
+            }
+            byte[] array = new byte[num * p.Data.Inventory.Count];
+            int num2 = 0;
+            foreach (KeyValuePair<int, short> keyValuePair in p.Data.Inventory)
+            {
+                byte[] bytes = BitConverter.GetBytes(keyValuePair.Key);
+                byte[] bytes2 = BitConverter.GetBytes(keyValuePair.Value);
+                Buffer.BlockCopy(bytes, 0, array, num2, 4);
+                num2 += 4;
+                Buffer.BlockCopy(bytes2, 0, array, num2, 2);
+                num2 += 2;
+            }
+            return array;
+        }
+
+        public Dictionary<int, short> InitInventoryFromBinary(byte[] binary = null)
+        {
+            int num = 6;
+            p.Data.Inventory = new Dictionary<int, short>();
+            if (binary == null || binary.Length < num)
+            {
+
+                return null;
+            }
+            for (int i = 0; i < binary.Length; i += num)
+            {
+                p.Data.Inventory[BitConverter.ToInt32(binary, i)] = BitConverter.ToInt16(binary, i + 4);
+            }
+            return p.Data.Inventory;
+        }
+        public void ClearInventory()
+        {
+            p.Data.Inventory.Clear();
         }
     }
 }

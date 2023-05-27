@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using System.Timers;
 using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.Networking.Server;
+using PixelWorldsServer2.World;
+using static PixelWorldsServer2.World.WorldInterface;
 
 namespace PixelWorldsServer2
 {
@@ -21,17 +23,17 @@ namespace PixelWorldsServer2
         public bool isInGame = false; // when the player has logon and is inside.
         public bool sendPing = false;
         public bool isLoadingWorld = false;
+        public PlayerInventoryManager inventoryManager;
         public bool IsOnline() => isInGame && Client != null;
         public struct PlayerData
         {
             public Player player;
-
             public uint UserID;
             public int Gems, Coins;
             public string CognitoID, Token;
             public string Name;
             public string LastIP;
-            public PlayerInventory Inventory;
+            public Dictionary<int, short> Inventory;
             public double PosX, PosY;
             public int Anim, Dir;
             public AdminStatus adminStatus;
@@ -73,9 +75,8 @@ namespace PixelWorldsServer2
                 pData.Token = "";
                 pData.Name = "";
                 pData.LastIP = "0.0.0.0";
-                pData.Inventory = new PlayerInventory();
+                pData.Inventory = new Dictionary<int, short>();
                 pData.BSON = new BSONObject();
-
                 fClient.data = pData; // interlink
             }
         }
@@ -89,7 +90,6 @@ namespace PixelWorldsServer2
             pData.Name = (string)reader["Name"];
             pData.LastIP = (string)reader["IP"];
             pData.adminStatus = (Player.AdminStatus)reader["AdminStatus"];
-
             object inven = reader["Inventory"];
             byte[] invData = null;
 
@@ -117,8 +117,9 @@ namespace PixelWorldsServer2
             {
                 pData.BSON = new BSONObject();
             }
-
-            pData.Inventory = new PlayerInventory(invData);
+            pData.Inventory = new Dictionary<int, short>();
+            inventoryManager = new PlayerInventoryManager(this);
+            this.inventoryManager.RegularDefaultInventory();
         }
 
         public FeatherClient Client { get { return fClient; } }
@@ -221,7 +222,7 @@ namespace PixelWorldsServer2
 
             cmd.Parameters.AddWithValue("@BSON", SimpleBSON.Dump(Data.BSON));
 
-            byte[] invData = Data.Inventory.Serialize();
+            byte[] invData = this.inventoryManager.GetInventoryAsBinary();
             cmd.Parameters.Add("@Inventory", DbType.Binary);
             cmd.Parameters["@Inventory"].Value = invData;
 
@@ -231,6 +232,21 @@ namespace PixelWorldsServer2
             {
                 //Util.Log($"Player ID: {Data.UserID} ('{Data.Name}') saved.");
             }
+        }
+        public void SendRemoveItemInventory(BlockType blockType, InventoryItemType inventoryType, int am)
+        {
+            BSONObject rObj = new BSONObject();
+            rObj["ID"] = MsgLabels.Ident.RemoveInventoryItem;
+            rObj["rI"] = new BSONObject();
+            rObj["rI"]["CollectableID"] = 0;
+            rObj["rI"]["BlockType"] = (int)blockType;
+            rObj["rI"]["Amount"] = am;
+            rObj["rI"]["InventoryType"] = (int)inventoryType;
+            rObj["rI"]["PosX"] = (Double)0;
+            rObj["rI"]["PosY"] = (Double)0;
+            rObj["rI"]["IsGem"] = false;
+            rObj["rI"]["GemType"] = 0;
+            this.Client.Send(rObj);
         }
     }
 }
