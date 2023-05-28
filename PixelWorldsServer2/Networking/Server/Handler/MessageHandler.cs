@@ -1,4 +1,4 @@
-﻿using FeatherNet;
+using FeatherNet;
 using Kernys.Bson;
 using PixelWorldsServer2.Database;
 using PixelWorldsServer2.DataManagement;
@@ -32,6 +32,8 @@ namespace PixelWorldsServer2.Networking.Server
 
         private List<InventoryKey> itemList = new List<InventoryKey>();
         public List<InventoryKey> Items => itemList;
+
+        private PlayerData pData;
 
 
         public void ProcessBSONPacket(FeatherClient client, BSONObject bObj)
@@ -344,7 +346,7 @@ namespace PixelWorldsServer2.Networking.Server
             resp["U"] = p.Data.UserID.ToString("X8");
             resp["Wo"] = "PIXELSTATION";
             resp["EmailVerified"] = true;
-            resp["Email"] = p.IsUnregistered() ? "Use /register at any world" : "discord.gg/U9695nTdB6";
+            resp["Email"] = p.IsUnregistered() ? "Use /register at any world" : "www.ltps.xyz";
 
             p.SetClient(client); // override client...
             client.data = p.Data;
@@ -425,17 +427,6 @@ namespace PixelWorldsServer2.Networking.Server
             player.AddGems(amt);
 
             return String.Format("Transfered {0} Gems to Account {1}!", amt, player.Data.Name);
-
-            using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1109600606349443072/1Zv7q3hFhPVU69NScp7yLO8BoGBugndmBxcpVLR3jdZnta0Leg41vZxD4Zwv202h26LG"))
-            {
-                var embed = new EmbedBuilder
-                {
-                    Title = "💎 Transfer Logs",
-                    Description = $"Transfered { 0 } Gems to Account { 1 }!"
-                };
-
-                client.SendMessageAsync(text: "```Economy Protector:```", embeds: new[] { embed.Build() });
-            }
 
 
         }
@@ -554,7 +545,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /trashall (trashs all item on inventory) , /givegems , /shop , /buyvip";
+                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /givegems , /shop , /buyvip";
                         break;
 
                     case "/gm":
@@ -631,11 +622,6 @@ namespace PixelWorldsServer2.Networking.Server
                         res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Mod Pack | Purchase Command: /modpack\n4- Hand Pack | Purchase Command: /handpack";
                         break;
 
-
-                    case "/trashall":
-                        res = HandleCommandClearInventory(p);
-                        break;
-
                     case "/wingspack":
                         if (p.Data.Gems >= 100000)
                         {
@@ -674,10 +660,10 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/modpack":
-                        if (p.Data.Gems >= 5000000)
+                        if (p.Data.Gems >= 30000000)
                         {
-                            res = "Bought Mod Pack for 5000000 Gems!";
-                            p.RemoveGems(5000000);
+                            res = "Bought Mod Pack for 30000000 Gems!";
+                            p.RemoveGems(30000000);
                             p.pSettings.Set(PlayerSettings.Bit.SET_MOD);
                             p.inventoryManager.modPack();
                             BSONObject awsaa = new BSONObject("DR");
@@ -686,17 +672,17 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Moderator Pack is 5.000.000 Gems. Not enough gems to purchase!\nModerator Pack includes: @In-Game Moderator Rank + İnvisability Power + Mod Hoodie";
+                            res = "Moderator Pack is 30.000.000 Gems. Not enough gems to purchase!\nModerator Pack includes: @In-Game Moderator Rank + İnvisability Power + Mod Hoodie";
                         }
 
                         break;
 
 
                     case "/handpack":
-                        if (p.Data.Gems >= 75000)
+                        if (p.Data.Gems >= 100000)
                         {
-                            res = "Bought Hand Pack for 75000 Gems!";
-                            p.RemoveGems(75000);
+                            res = "Bought Hand Pack for 100000 Gems!";
+                            p.RemoveGems(100000);
                             p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -704,7 +690,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Hand Pack is 75.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver ";
+                            res = "Hand Pack is 100.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver ";
                         }
 
                         break;
@@ -718,6 +704,7 @@ namespace PixelWorldsServer2.Networking.Server
               
                         break;
 
+
                     case "/online":
                         res = ($"{ pServer.GetPlayersIngameCount() } players are online.");
                         break;
@@ -730,11 +717,11 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/buyvip":
-                        if (p.Data.Gems >= 400000)
+                        if (p.Data.Gems >= 1000000)
                         {
                             res = "INFLUENCER Role Have been give successfully.";
                             p.pSettings.Set(PlayerSettings.Bit.SET_VIP);
-                            p.RemoveGems(400000);
+                            p.RemoveGems(1000000);
                             BSONObject r = new BSONObject("DR");
                             p.Send(ref r);
                             using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1073725309079265331/8yNyTL_6aSr95dwmEuVHdY8cWnxUoQ_dOfQJOLwQTeIKDOfu9FzvG0d5aJRVUZ98f4-g"))
@@ -753,7 +740,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                         else
                         {
-                            res = "@INFLUENCER role cost 400.000 Gems, you cant afford it. Break more blocks to gain gems.";
+                            res = "@INFLUENCER role cost 1.000.000 Gems, you cant afford it. Break more blocks to gain gems.";
 
                         }
                         break;
@@ -791,7 +778,7 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                if (Shop.ContainsItem(id) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
+                                if (Shop.ContainsItem(id))
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
@@ -1176,7 +1163,7 @@ namespace PixelWorldsServer2.Networking.Server
                  p.world.WorldName,
                  p.world.WorldName,
                  1,
-                    "  --------------------\nWelcome to our server, If you need any help please join our discord server here: https://t.ly/wos5");
+                    "  --------------------\nWelcome to our server, If you need any help please join our discord server here: https://ltps.xyz/");
 
             p.Send(ref cObj);
 
@@ -1667,10 +1654,18 @@ namespace PixelWorldsServer2.Networking.Server
         
         public void HandleOrbChange(Player p, BSONObject bObj)
         {
-            int orb = bObj["bgT"].int32Value;
+            var w = p.world;
+
+            if ((w.OwnerID > 0 && w.OwnerID != p.Data.UserID))
+            {
+                p.SelfChat("You cant use orb at worlds which you dont own!");
+            }
+            else
+            {
+                int orb = bObj["bgT"].int32Value;
             BlockType blockType = Config.getOrbBlockType(orb);
             bool invItem = p.inventoryManager.HasItemAmountInInventory(blockType, InventoryItemType.Consumable);
-            if(invItem)
+            if (invItem)
             {
                 p.inventoryManager.RemoveItemsFromInventory(blockType, InventoryItemType.Consumable, 1);
                 p.world.BackGroundType = (LayerBackgroundType)orb;
@@ -1681,12 +1676,20 @@ namespace PixelWorldsServer2.Networking.Server
             wObj["bgT"] = orb;
             wObj["U"] = p.Data.UserID.ToString("X8");
             p.world.Broadcast(ref wObj);
-
-
+            }
         }
         public void HandleWeatherChange(Player p, BSONObject bObj)
         {
-            int weather = bObj["wto"].int32Value;
+
+            var w = p.world;
+
+            if ((w.OwnerID > 0 && w.OwnerID != p.Data.UserID))
+            {
+                p.SelfChat("You cant use orb at worlds which you dont own!");
+            }
+            else
+            {
+                int weather = bObj["wto"].int32Value;
             BlockType blockType = Config.getWeatherBlockType(weather);
             bool invItem = p.inventoryManager.HasItemAmountInInventory(blockType, InventoryItemType.Consumable);
             if (invItem)
@@ -1700,6 +1703,7 @@ namespace PixelWorldsServer2.Networking.Server
             wObj["wto"] = weather;
             wObj["U"] = p.Data.UserID.ToString("X8");
             p.world.Broadcast(ref wObj);
+            }
 
         }
         private byte[] OnPacket(byte[] revBuffer, String from)
@@ -1807,5 +1811,5 @@ namespace PixelWorldsServer2.Networking.Server
                 }
             }
         }
-    }
+}
 }
