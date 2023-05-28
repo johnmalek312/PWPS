@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using PixelWorldsServer2.Networking.Server;
@@ -219,8 +219,7 @@ namespace PixelWorldsServer2.World
                     tiles[x, y].bg.id = 2;
                 }
             }
-            BackGroundType = LayerBackgroundType.CandyBackground;
-            WeatherType = WeatherType.DeepNether;
+            BackGroundType = LayerBackgroundType.ForestBackground;
         }
 
         public WorldTile GetTile(int x, int y)
