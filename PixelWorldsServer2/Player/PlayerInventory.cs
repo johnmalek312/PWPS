@@ -1,4 +1,4 @@
-﻿using PixelWorldsServer2.DataManagement;
+using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.World;
 using System;
 using System.Collections.Generic;
@@ -120,30 +120,30 @@ namespace PixelWorldsServer2
         public void vipEsyaVer()
         {
             // Mağzadaki alınamayan vip itemleri adminlere özel verme komutu (beta)
-            this.AddItemToInventory((WorldInterface.BlockType)934, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)935, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)1293, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)881, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)3086, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)3085, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)3087, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)3088, InventoryItemType.WearableItem, 201);
-            this.AddItemToInventory((WorldInterface.BlockType)3824, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)934, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)935, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1293, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)881, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3086, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3085, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3087, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3088, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3824, InventoryItemType.WearableItem, 1);
 
         }
 
         public void wingsPack()
         {
             // wings pack
-            this.AddItemToInventory((WorldInterface.BlockType)608, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)1350, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)2292, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)1298, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)4268, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)3481, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)4768, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)4197, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)2608, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)608, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1350, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2292, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1298, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4268, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3481, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4768, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4197, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2608, InventoryItemType.WearableItem, 1);
         }
 
         public void modPack()
@@ -158,12 +158,13 @@ namespace PixelWorldsServer2
         public Dictionary<int, short> handPack()
         {
             Dictionary<int, short> inv = new Dictionary<int, short>();
-            this.AddItemToInventory((WorldInterface.BlockType)4762, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)3482, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)4281, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.WearableItem, 25);
-            this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.WearableItem, 25);
+            this.AddItemToInventory((WorldInterface.BlockType)4762, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3482, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3483, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4281, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.WearableItem, 1);
             return inv;
         }
 
@@ -175,8 +176,7 @@ namespace PixelWorldsServer2
         public void RegularDefaultInventory()
         {
             // bunch of cool items
-            this.AddItemToInventory((WorldInterface.BlockType)750, InventoryItemType.Consumable, 999);
-            this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 999);
+            this.AddItemToInventory((WorldInterface.BlockType)750, InventoryItemType.Consumable, 500);
             this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4267, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4269, InventoryItemType.WearableItem, 1);
