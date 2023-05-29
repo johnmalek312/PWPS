@@ -1,4 +1,4 @@
-﻿using PixelWorldsServer2.DataManagement;
+using PixelWorldsServer2.DataManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +113,9 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("OrbWeatherLightRain", 10000, new KeyTriple<int, InventoryItemType, int>(3444, InventoryItemType.Consumable, 1));
             AddShopOffer("OrbWeatherSandStorm", 17500, new KeyTriple<int, InventoryItemType, int>(3443, InventoryItemType.Consumable, 1));
             AddShopOffer("WinterOrb", 10000, new KeyTriple<int, InventoryItemType, int>(521, InventoryItemType.Consumable, 1));
+            AddShopOffer("AlienOrb", 10000, new KeyTriple<int, InventoryItemType, int>(523, InventoryItemType.Consumable, 1));
             AddShopOffer("ForestOrb", 2000, new KeyTriple<int, InventoryItemType, int>(520, InventoryItemType.Consumable, 1));
+            AddShopOffer("worldkeyBugİtem", 2000, new KeyTriple<int, InventoryItemType, int>(525, InventoryItemType.Consumable, 1));
             AddShopOffer("StarOrb", 5000, new KeyTriple<int, InventoryItemType, int>(524, InventoryItemType.Consumable, 1));
             AddShopOffer("SandOrb", 9000, new KeyTriple<int, InventoryItemType, int>(519, InventoryItemType.Consumable, 1));
             AddShopOffer("NightOrb", 12000, new KeyTriple<int, InventoryItemType, int>(522, InventoryItemType.Consumable, 1));
@@ -169,6 +171,19 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("BlueprintWeaponSwordLaserRed", 350000, new KeyTriple<int, InventoryItemType, int>(854, InventoryItemType.Blueprint, 1));
             AddShopOffer("BlueprintWeaponSwordLaserBlue", 100, new KeyTriple<int, InventoryItemType, int>(855, InventoryItemType.Blueprint, 1));
             AddShopOffer("BlueprintShirtArmorKnight", 225000, new KeyTriple<int, InventoryItemType, int>(3342, InventoryItemType.Blueprint, 1));
+            AddShopOffer("AK47", 22000000, new KeyTriple<int, InventoryItemType, int>(217, InventoryItemType.Weapon, 1));
+            AddShopOffer("ghostwings", 22000000, new KeyTriple<int, InventoryItemType, int>(4267, InventoryItemType.Weapon, 1));
+            AddShopOffer("scorchermask", 22000000, new KeyTriple<int, InventoryItemType, int>(4765, InventoryItemType.Weapon, 1));
+            AddShopOffer("BoneWings", 22000000, new KeyTriple<int, InventoryItemType, int>(2359, InventoryItemType.Weapon, 1));
+            AddShopOffer("flamingmask", 22000000, new KeyTriple<int, InventoryItemType, int>(2356, InventoryItemType.Weapon, 1));
+            AddShopOffer("flamingwings", 22000000, new KeyTriple<int, InventoryItemType, int>(4266, InventoryItemType.Weapon, 1));
+            AddShopOffer("jakekatana", 22000000, new KeyTriple<int, InventoryItemType, int>(596, InventoryItemType.Weapon, 1));
+            AddShopOffer("JAKEKATANA2", 22000000, new KeyTriple<int, InventoryItemType, int>(595, InventoryItemType.Weapon, 1));
+            AddShopOffer("ENDLESSMASK", 22000000, new KeyTriple<int, InventoryItemType, int>(719, InventoryItemType.Weapon, 1));
+            AddShopOffer("TORMENTORMASK", 22000000, new KeyTriple<int, InventoryItemType, int>(2377, InventoryItemType.Weapon, 1));
+            AddShopOffer("CTHULHUMASK", 22000000, new KeyTriple<int, InventoryItemType, int>(1329, InventoryItemType.Weapon, 1));
+            AddShopOffer("DARKSPRITE", 22000000, new KeyTriple<int, InventoryItemType, int>(3484, InventoryItemType.Weapon, 1));
+            AddShopOffer("DARKIFRITMASK", 22000000, new KeyTriple<int, InventoryItemType, int>(4265, InventoryItemType.WearableItem, 1));
             AddShopOffer("BlueprintPantsArmorKnight", 225000, new KeyTriple<int, InventoryItemType, int>(3343, InventoryItemType.Blueprint, 1));
             AddShopOffer("BlueprintHatHelmetArmorKnight", 225000, new KeyTriple<int, InventoryItemType, int>(3344, InventoryItemType.Blueprint, 1));
             AddShopOffer("BlueprintWeaponSwordKnight", 350000, new KeyTriple<int, InventoryItemType, int>(3345, InventoryItemType.Blueprint, 1));
