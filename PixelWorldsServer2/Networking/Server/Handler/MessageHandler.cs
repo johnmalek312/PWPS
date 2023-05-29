@@ -619,14 +619,14 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/shop":
-                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Mod Pack | Purchase Command: /modpack\n4- Hand Pack | Purchase Command: /handpack";
+                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Mod Pack | Purchase Command: /modpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack";
                         break;
 
                     case "/wingspack":
-                        if (p.Data.Gems >= 100000)
+                        if (p.Data.Gems >= 200000)
                         {
-                            res = "Bought Wings Pack for 100.000 Gems!";
-                            p.RemoveGems(100000);
+                            res = "Bought Wings Pack for 200.000 Gems!";
+                            p.RemoveGems(200000);
                             p.inventoryManager.wingsPack();
                             BSONObject aws = new BSONObject("DR");
                             p.Send(ref aws);
@@ -634,7 +634,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Wings Pack is 100.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings";
+                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
                         }
                                
                         break;
@@ -679,10 +679,10 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/handpack":
-                        if (p.Data.Gems >= 100000)
+                        if (p.Data.Gems >= 150000)
                         {
-                            res = "Bought Hand Pack for 100000 Gems!";
-                            p.RemoveGems(100000);
+                            res = "Bought Hand Pack for 150000 Gems!";
+                            p.RemoveGems(150000);
                             p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -690,11 +690,31 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Hand Pack is 100.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver ";
+                            res = "Hand Pack is 150.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
                         }
 
                         break;
 
+
+                    case "/maskpack":
+                        if (p.Data.Gems >= 100000)
+                        {
+                            res = "Bought Mask Pack for 100000 Gems!";
+                            p.RemoveGems(100000);
+                            p.inventoryManager.maskPack();
+                            BSONObject awsaaq = new BSONObject("DR");
+                            p.Send(ref awsaaq);
+
+                        }
+                        else
+                        {
+                            res = "Mask Pack is 100.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
+                        }
+
+                        break;
+
+
+                  
 
 
 
@@ -748,16 +768,6 @@ namespace PixelWorldsServer2.Networking.Server
 
                         break;
 
-                    case "/vipitems":
-                            p.inventoryManager.vipEsyaVer();
-                            res = "Added 201 Each VIP items to your inventory.";
-                            BSONObject aw = new BSONObject("DR");
-                            p.Send(ref aw);
-                        
-                      
-
-                        break;
-
 
                     case "/give":
                         if (tokCount < 2)
@@ -783,9 +793,9 @@ namespace PixelWorldsServer2.Networking.Server
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
                                 }
-                                p.world.Drop(id, 25, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
+                                p.world.Drop(id, 20, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
 
-                                res = @$"Given 25 {it.name}  (ID {id}).";
+                                res = @$"Given 20 {it.name}  (ID {id}).";
 
                                 
                             }
