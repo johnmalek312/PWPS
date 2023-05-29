@@ -128,7 +128,7 @@ namespace PixelWorldsServer2
             this.AddItemToInventory((WorldInterface.BlockType)3085, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)3087, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)3088, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)3824, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3824, InventoryItemType.Consumable, 1);
 
         }
 
@@ -144,6 +144,9 @@ namespace PixelWorldsServer2
             this.AddItemToInventory((WorldInterface.BlockType)4768, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4197, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)2608, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4266, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2359, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4267, InventoryItemType.WearableItem, 1);
         }
 
         public void modPack()
@@ -155,6 +158,20 @@ namespace PixelWorldsServer2
             this.AddItemToInventory((WorldInterface.BlockType)794, InventoryItemType.WearableItem, 1);
         }
 
+        public void maskPack()
+        {
+
+            // Mask Pack
+            this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3484, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1329, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2377, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)719, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2356, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4765, InventoryItemType.WearableItem, 1);
+        }
+
+
         public Dictionary<int, short> handPack()
         {
             Dictionary<int, short> inv = new Dictionary<int, short>();
@@ -165,6 +182,9 @@ namespace PixelWorldsServer2
             this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)217, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)606, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)595, InventoryItemType.Weapon, 1);
             return inv;
         }
 
@@ -177,8 +197,6 @@ namespace PixelWorldsServer2
         {
             // bunch of cool items
             this.AddItemToInventory((WorldInterface.BlockType)750, InventoryItemType.Consumable, 500);
-            this.AddItemToInventory((WorldInterface.BlockType)4265, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)4267, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4269, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)2152, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)3176, InventoryItemType.WearableItem, 1);
