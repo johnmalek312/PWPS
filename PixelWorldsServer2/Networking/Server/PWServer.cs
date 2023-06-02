@@ -219,9 +219,14 @@ namespace PixelWorldsServer2.Networking.Server
                     {
                         gemType = (Int16)col["GemType"].int32Value;
                     }
+                    
+                    ms.Write(BitConverter.GetBytes(col["InventoryType"].int32Value));
                     ms.Write(BitConverter.GetBytes(gemType));
                 }
-                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
+                ms.Write(BitConverter.GetBytes(col["WorldBackgroundType"]["WorldBackgroundType"].int32Value));
+                ms.Write(BitConverter.GetBytes(col["WorldWeatherType"]["WorldWeatherType"].int32Value));
+                ms.Write(BitConverter.GetBytes((int)0));
+                File.WriteAllBytes(path, (ms.ToArray()));
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
                 Console.WriteLine("Saved");
             }
