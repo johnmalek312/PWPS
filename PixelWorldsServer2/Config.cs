@@ -1,12 +1,32 @@
-﻿using PixelWorldsServer2.World;
+﻿using BasicTypes;
+using PixelWorldsServer2.World;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace PixelWorldsServer2
 {
+    public enum BlockDirection
+    {
+        // Token: 0x04001BBF RID: 7103
+        None,
+        // Token: 0x04001BC0 RID: 7104
+        Center,
+        // Token: 0x04001BC1 RID: 7105
+        Up,
+        // Token: 0x04001BC2 RID: 7106
+        Right,
+        // Token: 0x04001BC3 RID: 7107
+        Down,
+        // Token: 0x04001BC4 RID: 7108
+        Left,
+        // Token: 0x04001BC5 RID: 7109
+        END_OF_ENUM
+    }
+
     public class KeyTriple<T1, T2, T3>
     {
         public T1 Key { get; set; }
@@ -20,8 +40,10 @@ namespace PixelWorldsServer2
             Value2 = value2;
         }
     }
-    public static class Config
+    public class Config
     {
+        public static readonly int playersWhoHaveAccessToLockMaxAmount = 30;
+
         public static WorldInterface.BlockType getOrbBlockType(WorldInterface.LayerBackgroundType orb)
         {
             switch (orb)
@@ -173,6 +195,27 @@ namespace PixelWorldsServer2
                     return WorldInterface.BlockType.None;
             }
         }
+
+        public static (float, float) ConvertMapPointToWorldPoint(int x, int y, int tileSizeX = 80, int tileSizeY = 60)
+        {
+            return ((float)x * tileSizeX, (float)y * tileSizeY);
+        }
+
+        public static (float, float) ConvertPlayerMapPointToWorldPoint(int x, int y, int tileSizeX = 80, int tileSizeY = 60)
+        {
+            return ((float)x * tileSizeX, (float)y * tileSizeY - tileSizeY * 0.5f);
+        }
+
+
+        public static (int, int) ConvertWorldPointToMapPoint(float x, float y, int tileSizeX = 80, int tileSizeY = 60)
+        {
+            return ((int)((x + tileSizeX * 0.5f) / tileSizeX), (int)((y + tileSizeY * 0.5f) / tileSizeY));
+        }
+        public static BlockDirection GetBlockDirection(WorldInterface.BlockType blockType)
+        {
+            return Config.defaultBlockDirection;
+        }
+        private static BlockDirection defaultBlockDirection = BlockDirection.None;
     }
 }
 

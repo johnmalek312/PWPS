@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace PixelWorldsServer2.Networking.Server
@@ -47,9 +48,48 @@ namespace PixelWorldsServer2.Networking.Server
         }
         public Player CreateAccount(string cogID, string cogToken, string ip = "0.0.0.0", int adminStatus = 0)
         {
+
+            var sql2 = pServer.GetSQL();
+            bool validID = false;
+            int count = 20;
+            string ID = "";
+            while (count > 0) {
+                try
+                {
+                    var cmdt = sql2.Make("SELECT * FROM players WHERE ID=@ID");
+                    ID = Util.RandomString(8);
+                    cmdt.Parameters.AddWithValue("@ID", ID);
+
+                    using (var reader = sql2.PreparedFetchQuery(cmdt))
+                    {
+                        if (reader != null)
+                        {
+                            if (reader.Read())
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                validID = true;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            validID = true;
+                            continue;
+                        }
+                    }
+                }
+                catch { count--; }
+            }
+            if (count == 0) return null;
+
             var sql = pServer.GetSQL();
 
-            var cmd = sql.Make("INSERT INTO players (Name, CognitoID, Token, IP, AdminStatus) VALUES (@Name, @CognitoID, @Token, @IP, @AdminStatus)");
+            var cmd = sql.Make("INSERT INTO players (ID, Name, CognitoID, Token, IP, AdminStatus) VALUES (@ID, @Name, @CognitoID, @Token, @IP, @AdminStatus)");
+
+            cmd.Parameters.AddWithValue("@ID", ID);
             cmd.Parameters.AddWithValue("@CognitoID", cogID);
             cmd.Parameters.AddWithValue("@Token", cogToken);
             cmd.Parameters.AddWithValue("@IP", ip);
@@ -62,7 +102,7 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 var p = new Player();
                 p.Data.player = p;
-                p.Data.UserID = (uint)sql.GetLastInsertID();
+                p.Data.UserID = ID;
                 p.Data.Inventory = new Dictionary<int, short>();
                 p.Data.CognitoID = cogID;
                 p.Data.Token = cogToken;

@@ -32,7 +32,7 @@ namespace PixelWorldsServer2.Networking.Server
         private SQLiteManager sqlManager = null;
         private WorldManager worldManager = null;
         private AccountHelper accountHelper = null;
-        public Dictionary<uint, Player> players = new Dictionary<uint, Player>();
+        public Dictionary<string, Player> players = new Dictionary<string, Player>();
         public object locker = new object();
         private long lastDiscordUpdateTime;
         public FeatherServer GetServer() => fServer;
@@ -42,7 +42,7 @@ namespace PixelWorldsServer2.Networking.Server
         DiscordSocketClient _client = new DiscordSocketClient();
 
         // return null if non existent:
-        public Player GetPlayerByUserID(uint userID)
+        public Player GetPlayerByUserID(string userID)
         {
             Player p = null;
 
@@ -65,7 +65,7 @@ namespace PixelWorldsServer2.Networking.Server
             return p;
         }
 
-        public string GetNameFromUserID(uint userID)
+        public string GetNameFromUserID(string userID)
         {
             var p = GetPlayerByUserID(userID);
 
@@ -87,7 +87,7 @@ namespace PixelWorldsServer2.Networking.Server
             return null;
         }
 
-        public Player GetOnlinePlayerByUserID(uint userID)
+        public Player GetOnlinePlayerByUserID(string userID)
         {
             foreach (var p in players.Values)
             {
@@ -101,7 +101,7 @@ namespace PixelWorldsServer2.Networking.Server
             return null;
         }
 
-        private void HandleConsoleGiveGems(uint userID, int amount)
+        private void HandleConsoleGiveGems(string userID, int amount)
         {
             if (amount == 0)
             {
@@ -131,7 +131,7 @@ namespace PixelWorldsServer2.Networking.Server
             }
 
         }
-        private void HandleConsoleSetRank(uint userID, Ranks rankType)
+        private void HandleConsoleSetRank(string userID, Ranks rankType)
         {
             // duration is in secs here...
             var p = GetOnlinePlayerByUserID(userID);
@@ -176,7 +176,7 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 Player player = new Player(reader);
 
-                uint userID = player.Data.UserID;
+                string userID = player.Data.UserID;
                 if (players.ContainsKey(userID))
                 {
                     player = players[userID];
@@ -219,20 +219,20 @@ namespace PixelWorldsServer2.Networking.Server
 
                         case "setvip":
                             if (cmd.Length > 1)
-                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.MODERATOR);
+                                HandleConsoleSetRank(cmd[1], Ranks.VIP);
 
                             break;
 
                         case "setmod":
                             if (cmd.Length > 1)
-                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.MODERATOR);
+                                HandleConsoleSetRank(cmd[1], Ranks.VIP);
 
                             break;
 
 
                         case "setplayer":
                             if (cmd.Length > 1)
-                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.PLAYER);
+                                HandleConsoleSetRank(cmd[1], Ranks.VIP);
 
                             break;
 
@@ -240,14 +240,14 @@ namespace PixelWorldsServer2.Networking.Server
                         case "setadmin":
 
                             if (cmd.Length > 1)
-                                HandleConsoleSetRank(uint.Parse(cmd[1]), Ranks.ADMIN);
+                                HandleConsoleSetRank(cmd[1], Ranks.VIP);
 
                             break;
 
                         case "givegems":
 
                             if (cmd.Length > 2)
-                                HandleConsoleGiveGems(uint.Parse(cmd[1]), int.Parse(cmd[2]));
+                                HandleConsoleGiveGems(cmd[1], int.Parse(cmd[2]));
 
                             break;
 
@@ -502,11 +502,17 @@ namespace PixelWorldsServer2.Networking.Server
         {
             if (client == null)
                 return;
-
+            try { 
             msgHandler.ProcessBSONPacket(client, packet);
-            lock(client.sendLock){
-            client.areWeSending = true;
+                lock (client.sendLock) {
+                    client.areWeSending = true;
+                }
+                
         }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private void OnConnect(FeatherClient client, int flags)

@@ -12,6 +12,7 @@ using PixelWorldsServer2.DataManagement;
 using System.Linq;
 using static PixelWorldsServer2.World.WorldInterface;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace PixelWorldsServer2.World
 {
@@ -28,10 +29,12 @@ namespace PixelWorldsServer2.World
         public WorldInterface.WeatherType WeatherType = WorldInterface.WeatherType.None;
         public WorldInterface.LayerBackgroundType BackGroundType;
         private WorldTile[,] tiles = null;
+        public List<WorldItemBase> worldItems = new List<WorldItemBase>();
+        public int itemIndex = 0;
         public int GetSizeX() => tiles.GetUpperBound(0) + 1;
         public int GetSizeY() => tiles.GetUpperBound(1) + 1;
 
-        public uint OwnerID = 0;
+        public LockWorldData lockWorldData;
         public List<Player> Players => players;
         public void AddPlayer(Player p)
         {
@@ -46,18 +49,29 @@ namespace PixelWorldsServer2.World
                 var embed = new EmbedBuilder
                 {
                     Title = "📈 LTPS Logs | Efe & Erdem",
-                    Description = $"Player Name: {p.Data.Name}\nWorld Name: { p.world.WorldName }\nServer Online Count: { pServer.GetPlayersIngameCount() }"
+                    Description = $"Player Name: {p.Data.Name}\nWorld Name: {p.world.WorldName}\nServer Online Count: {pServer.GetPlayersIngameCount()}"
                 };
 
                 client.SendMessageAsync(text: "```The world is saved, here is the info:```", embeds: new[] { embed.Build() });
+            }
         }
-    }
 
         public int HasPlayer(Player p)
         {
             for (int i = 0; i < players.Count; i++)
             {
                 if (p.Data.UserID == players[i].Data.UserID)
+                    return i;
+
+            }
+
+            return -1;
+        }
+        public int HasPlayer(string p)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (p == players[i].Data.UserID)
                     return i;
 
             }
@@ -79,9 +93,9 @@ namespace PixelWorldsServer2.World
             BSONObject bObj = new BSONObject("RC");
             bObj["CollectableID"] = colID;
             Broadcast(ref bObj, toIgnore);
-           
+
         }
-       
+
 
         public void Broadcast(ref BSONObject bObj, params Player[] ignored) // ignored player can be used to ignore packet being sent to player itself.
         {
@@ -142,7 +156,7 @@ namespace PixelWorldsServer2.World
             }
 
             Util.Log("Attempting to load world from DB...");
-            Deserialize(Util.LZMAHelper.DecompressLZMA(File.ReadAllBytes(path)));
+            Deserialize(File.ReadAllBytes(path));
             this.WorldName = worldName;
         }
 
@@ -162,8 +176,7 @@ namespace PixelWorldsServer2.World
 
             using (MemoryStream ms = new MemoryStream())
             {
-                ms.WriteByte(0x2); // version
-                ms.Write(BitConverter.GetBytes(OwnerID));
+                ms.WriteByte(0x4); // version
 
                 for (int y = 0; y < GetSizeY(); y++)
                 {
@@ -191,8 +204,33 @@ namespace PixelWorldsServer2.World
                 }
                 ms.Write(BitConverter.GetBytes((int)BackGroundType));
                 ms.Write(BitConverter.GetBytes((int)WeatherType));
+                if (worldItems.Count > 0)
+                {
+                    BSONObject dobj = new BSONObject();
+                    foreach (WorldItemBase item in worldItems)
+                    {
 
-                File.WriteAllBytes(path, Util.LZMAHelper.CompressLZMA(ms.ToArray()));
+                        if (item.blockType == BlockType.LockWorld)
+                        {
+                            dobj["W " + lockWorldData.x + " " + lockWorldData.y] = lockWorldData.GetAsBSON();
+                        }
+                    }
+                    if (dobj.Keys.Count > 0)
+                    {
+                        byte[] dump = SimpleBSON.Dump(dobj);
+                        ms.Write(BitConverter.GetBytes(dump.Length));
+                        ms.Write(dump);
+                    }
+                    else
+                    {
+                        ms.Write(BitConverter.GetBytes((int)0));
+                    }
+                }
+                else
+                {
+                    ms.Write(BitConverter.GetBytes((int)0));
+                }
+                File.WriteAllBytes(path, ms.ToArray());
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
             }
         }
@@ -220,6 +258,7 @@ namespace PixelWorldsServer2.World
                 }
             }
             BackGroundType = LayerBackgroundType.ForestBackground;
+            WeatherType = WeatherType.None;
         }
 
         public WorldTile GetTile(int x, int y)
@@ -281,6 +320,17 @@ namespace PixelWorldsServer2.World
                 col["CollectableID"] = kv.Key;
                 cObj[$"C{i}"] = col;
             }
+            BSONObject dobj = new BSONObject();
+            foreach (WorldItemBase item in worldItems)
+            {
+
+                if (item.blockType == BlockType.LockWorld)
+                {
+                    var a = lockWorldData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+            }
+
 
             List<int>[] layerHits = new List<int>[4];
             for (int j = 0; j < layerHits.Length; j++)
@@ -349,13 +399,12 @@ namespace PixelWorldsServer2.World
             wObj["RatingBoardDateTimeKey"] = DateTimeOffset.UtcNow.Date;
             wObj["WorldLightingType"] = wLightingType;
             wObj["WorldWeatherType"] = wWeatherType;
-            wObj["WorldItems"] = new BSONObject();
 
             BSONObject pObj = new BSONObject();
 
             wObj["PlantedSeeds"] = pObj;
             wObj["Collectables"] = cObj;
-
+            wObj["WorldItems"] = dobj;
             return wObj;
         }
 
@@ -372,9 +421,8 @@ namespace PixelWorldsServer2.World
             }
 
             version = binary[0];
-            OwnerID = BitConverter.ToUInt32(binary, 1);
 
-            int pos = 5;
+            int pos = 1;
             for (int y = 0; y < GetSizeY(); y++)
             {
                 for (int x = 0; x < GetSizeX(); x++)
@@ -405,24 +453,125 @@ namespace PixelWorldsServer2.World
                 c.posX = BitConverter.ToDouble(binary, pos + 4);
                 c.posY = BitConverter.ToDouble(binary, pos + 12);
                 c.gemType = BitConverter.ToInt16(binary, pos + 20);
-                if (version == 0x2)
-                {
                     c.type = BitConverter.ToInt16(binary, pos + 22);
-                    pos += 24;
-                }
-                else
-                {
-                    c.type = ItemDB.GetByID(c.item).type;
-                }
+                pos += 24;
                 collectables[++colID] = c;
             }
-            if(pos < binary.Length)
+            if (pos < binary.Length)
             {
                 BackGroundType = (WorldInterface.LayerBackgroundType)BitConverter.ToInt32(binary, pos);
                 WeatherType = (WorldInterface.WeatherType)BitConverter.ToInt32(binary, pos + 4);
                 pos += 8;
 
             }
+            int len = BitConverter.ToInt32(binary, pos);
+            
+            pos += 4;
+            if (len > 0)
+            {
+                BSONObject dobj = SimpleBSON.Load(new ArraySegment<byte>(binary, pos, len).ToArray());
+                foreach (string key in dobj.Keys)
+                {
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "LockWorldData")
+                    {
+                        lockWorldData = new LockWorldData(dobj[key]["itemId"].int32Value);
+                        lockWorldData.SetViaBSON(dobj[key] as BSONObject);
+                        if(!worldItems.Contains(lockWorldData))worldItems.Add(lockWorldData);
+                    }
+                }
+            }   
+
+        }
+        public bool CanKick(Player p, string id)
+        {
+            WorldSession w = p.world;
+            if (w == null) return false;
+            if (p == null) return false;
+            if (w.lockWorldData == null) return false;
+            if (p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID))
+                return true;
+
+            return false;
+        }
+        public bool CanBan(Player p, string id)
+        {
+            WorldSession w = p.world;
+            if (w == null) return false;
+            if (p == null) return false;
+            if (w.lockWorldData == null) return false;
+            if (p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID))
+                return true;
+
+            return false;
+        }
+        public bool CanSummon(Player p, string id)
+        {
+            WorldSession w = p.world;
+
+            if (w == null) return false;
+            if (p == null) return false;
+            if (w.lockWorldData == null) return false;
+            if (p.world.lockWorldData.DoesPlayerHaveMinorAccessToLock(p.Data.UserID))
+                return true;
+
+            return false;
+        }
+
+        public bool SetBlock(int x, int y, short blockType, Player p)
+        {
+            if (this.GetTile(x, y).fg.id != 0) return false;
+            if (blockType == (short)BlockType.LockWorld)
+            {
+                foreach (WorldItemBase item in worldItems)
+                {
+                    if (item.blockType == BlockType.LockWorld)
+                    {
+                        return false;
+                    }
+                }
+                this.itemIndex++;
+                lockWorldData = new LockWorldData(itemIndex);
+                lockWorldData.SetPlayerWhoOwnsLockId(p.Data.UserID);
+                lockWorldData.SetPlayerWhoOwnsLockName(p.Data.Name);
+                lockWorldData.SetLastActivatedTime(DateTime.UtcNow);
+                lockWorldData.SetCreationTime(DateTime.UtcNow);
+                lockWorldData.x = x; lockWorldData.y = y;
+                worldItems.Add(lockWorldData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+
+            Item it = ItemDB.GetByID((int)blockType);
+            switch (it.type)
+            {
+                case 3:
+                    {
+                        var t = this.GetTile(x, y);
+                        t.water.id = blockType;
+                        t.water.damage = 0;
+                        t.water.lastHit = 0;
+                        break;
+                    }
+                default:
+                    {
+
+                        var t = this.GetTile(x, y);
+                        t.fg.id = blockType;
+                        t.fg.damage = 0;
+                        t.fg.lastHit = 0;
+
+                        break;
+                    }
+            }
+            return true;
+        }
+        public WorldItemBase FindItemBaseWithID(int id)
+        {
+            WorldItemBase worldItem = worldItems.Find(item => item.itemId == id);
+            return worldItem;
         }
 
         ~WorldSession()

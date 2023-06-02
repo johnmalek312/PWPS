@@ -28,7 +28,7 @@ namespace PixelWorldsServer2
         public struct PlayerData
         {
             public Player player;
-            public uint UserID;
+            public string UserID;
             public int Gems, Coins;
             public string CognitoID, Token;
             public string Name;
@@ -68,7 +68,7 @@ namespace PixelWorldsServer2
                 this.pSettings = new PlayerSettings();
 
                 pData.player = this;
-                pData.UserID = 0;
+                pData.UserID = "";
                 pData.Gems = 0;
                 pData.Coins = 0;
                 pData.CognitoID = "";
@@ -84,7 +84,7 @@ namespace PixelWorldsServer2
         {
             pData.player = this;
             this.pSettings = new PlayerSettings((int)reader["Settings"]);
-            pData.UserID = (uint)(long)reader["ID"];
+            pData.UserID = (string)reader["ID"];
             pData.Gems = (int)reader["Gems"];
             pData.Coins = (int)reader["ByteCoins"];
             pData.Name = (string)reader["Name"];

@@ -139,6 +139,9 @@ namespace PixelWorldsServer2.DataManagement
             public const string ChangeOrb = "ChangeBackground";
             public const string RemoveInventoryItem = "RIi";
             public const string ChangeWeather = "CWWoq";
+            public const string Summon = "WP";
+            public const string KickPlayer = "KPl";
+            public const string BanPlayer = "BPl";
 
 
         }

@@ -30,6 +30,24 @@ namespace PixelWorldsServer2.World
             // Token: 0x0400114E RID: 4430
             WeaponGun
         }
+        public enum BlockDirection
+        {
+            // Token: 0x04001BBF RID: 7103
+            None,
+            // Token: 0x04001BC0 RID: 7104
+            Center,
+            // Token: 0x04001BC1 RID: 7105
+            Up,
+            // Token: 0x04001BC2 RID: 7106
+            Right,
+            // Token: 0x04001BC3 RID: 7107
+            Down,
+            // Token: 0x04001BC4 RID: 7108
+            Left,
+            // Token: 0x04001BC5 RID: 7109
+            END_OF_ENUM
+        }
+
         public enum WeatherType
         {
             // Token: 0x04006A95 RID: 27285
