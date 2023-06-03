@@ -53,7 +53,7 @@ namespace PixelWorldsServer2.Networking.Server
             bool validID = false;
             int count = 20;
             string ID = "";
-            while (count > 0) {
+            while (count > 0 && !validID) {
                 try
                 {
                     var cmdt = sql2.Make("SELECT * FROM players WHERE ID=@ID");
@@ -65,9 +65,8 @@ namespace PixelWorldsServer2.Networking.Server
                         if (reader != null)
                         {
                             if (reader.Read())
-                            {
-                                continue;
-                            }
+                            { count--; continue; }
+
                             else
                             {
                                 validID = true;
