@@ -68,217 +68,211 @@ namespace PixelWorldsServer2.Networking.Server
                 string mID = mObj[MsgLabels.MessageID];
                 if (mObj["ID"].stringValue != "mP" && mObj["ID"].stringValue != "ST")
                     ReadBSON(mObj, Log: Util.LogClient);
-                try
+
+                switch (mID)
                 {
-                    switch (mID)
-                    {
 
-                        case MsgLabels.Ident.VersionCheck:
-                            Util.Log("Client requests version check, responding now...");
-                            //#endif
-                            BSONObject resp = new BSONObject();
-                            resp[MsgLabels.MessageID] = MsgLabels.Ident.VersionCheck;
-                            resp[MsgLabels.VersionNumberKey] = pServer.Version;
-                            client.Send(resp);
+                    case MsgLabels.Ident.VersionCheck:
+                        Util.Log("Client requests version check, responding now...");
+                        //#endif
+                        BSONObject resp = new BSONObject();
+                        resp[MsgLabels.MessageID] = MsgLabels.Ident.VersionCheck;
+                        resp[MsgLabels.VersionNumberKey] = pServer.Version;
+                        client.Send(resp);
+                        break;
+
+                    case MsgLabels.Ident.GetPlayerData:
+                        HandlePlayerLogon(client, mObj);
+                        break;
+
+                    case MsgLabels.Ident.TryToJoinWorld:
+                        HandleTryToJoinWorld(p, mObj);
+                        break;
+
+                    case "TTJWR":
+                        HandleTryToJoinWorldRandom(p);
+                        break;
+
+                    case MsgLabels.Ident.GetWorld:
+                        HandleGetWorld(p, mObj);
+                        break;
+
+                    case "GSb":
+                        if (p != null)
+                            p.isLoadingWorld = false;
+
+                        p.Send(ref mObj);
+                        break;
+
+                    case "WCM":
+                        HandleWorldChatMessage(p, mObj);
+                        break;
+
+                    case "MWli":
+                        HandleMoreWorldInfo(p, mObj);
+                        break;
+
+                    case "PSicU":
+                        HandlePlayerStatusChange(p, mObj);
+                        break;
+
+                    case "BIPack":
+                        HandleShopPurchase(p, mObj);
+                        break;
+
+                    case "RenamePlayer":
+                        HandleRenamePlayer(p, mObj);
+                        break;
+
+                    case "rOP": // request other players
+                        HandleSpawnPlayer(p, mObj);
+                        HandleRequestOtherPlayers(p, mObj);
+                        break;
+
+                    case "GM":
+                        HandleGlobalMessage(p, mObj);
+                        break;
+
+                    case "RtP":
+                        break;
+
+                    case MsgLabels.Ident.LeaveWorld:
+                        HandleLeaveWorld(p, mObj);
+                        break;
+
+                    case "rAI": // request AI (bots, etc.)??
+                        HandleRequestAI(p, mObj);
+                        break;
+
+                    case "rAIp": // ??
+                        HandleRequestAIp(p, mObj);
+                        break;
+
+                    case "Rez":
+                        if (p == null)
                             break;
 
-                        case MsgLabels.Ident.GetPlayerData:
-                            HandlePlayerLogon(client, mObj);
+                        if (p.world == null)
                             break;
 
-                        case MsgLabels.Ident.TryToJoinWorld:
-                            HandleTryToJoinWorld(p, mObj);
-                            break;
+                        mObj["U"] = p.Data.UserID;
+                        p.world.Broadcast(ref mObj, p);
+                        break;
 
-                        case "TTJWR":
-                            HandleTryToJoinWorldRandom(p);
-                            break;
+                    case MsgLabels.Ident.WearableUsed:
+                        HandleWearableUsed(p, mObj);
+                        break;
+                    case MsgLabels.Ident.WearableRemoved:
+                        HandleWearableRemoved(p, mObj);
+                        break;
 
-                        case MsgLabels.Ident.GetWorld:
-                            HandleGetWorld(p, mObj);
-                            break;
+                    case "C":
+                        HandleCollect(p, mObj["CollectableID"]);
+                        break;
 
-                        case "GSb":
+                    case "RsP":
+                        HandleRespawn(p, mObj);
+                        break;
+
+                    case "GAW":
+                        HandleGetActiveWorlds(p);
+                        break;
+
+                    case "TDmg":
+                        {
                             if (p != null)
-                                p.isLoadingWorld = false;
-
-                            p.Send(ref mObj);
-                            break;
-
-                        case "WCM":
-                            HandleWorldChatMessage(p, mObj);
-                            break;
-
-                        case "MWli":
-                            HandleMoreWorldInfo(p, mObj);
-                            break;
-
-                        case "PSicU":
-                            HandlePlayerStatusChange(p, mObj);
-                            break;
-
-                        case "BIPack":
-                            HandleShopPurchase(p, mObj);
-                            break;
-
-                        case "RenamePlayer":
-                            HandleRenamePlayer(p, mObj);
-                            break;
-
-                        case "rOP": // request other players
-                            HandleSpawnPlayer(p, mObj);
-                            HandleRequestOtherPlayers(p, mObj);
-                            break;
-
-                        case "GM":
-                            HandleGlobalMessage(p, mObj);
-                            break;
-
-                        case "RtP":
-                            break;
-
-                        case MsgLabels.Ident.LeaveWorld:
-                            HandleLeaveWorld(p, mObj);
-                            break;
-
-                        case "rAI": // request AI (bots, etc.)??
-                            HandleRequestAI(p, mObj);
-                            break;
-
-                        case "rAIp": // ??
-                            HandleRequestAIp(p, mObj);
-                            break;
-
-                        case "Rez":
-                            if (p == null)
-                                break;
-
-                            if (p.world == null)
-                                break;
-
-                            mObj["U"] = p.Data.UserID;
-                            p.world.Broadcast(ref mObj, p);
-                            break;
-
-                        case MsgLabels.Ident.WearableUsed:
-                            HandleWearableUsed(p, mObj);
-                            break;
-                        case MsgLabels.Ident.WearableRemoved:
-                            HandleWearableRemoved(p, mObj);
-                            break;
-
-                        case "C":
-                            HandleCollect(p, mObj["CollectableID"]);
-                            break;
-
-                        case "RsP":
-                            HandleRespawn(p, mObj);
-                            break;
-
-                        case "GAW":
-                            HandleGetActiveWorlds(p);
-                            break;
-
-                        case "TDmg":
                             {
-                                if (p != null)
+                                if (p.world != null)
                                 {
-                                    if (p.world != null)
-                                    {
-                                        BSONObject rsp = new BSONObject("UD");
+                                    BSONObject rsp = new BSONObject("UD");
 
-                                        rsp["U"] = p.Data.UserID;
-                                        rsp["x"] = p.world.SpawnPointX;
-                                        rsp["y"] = p.world.SpawnPointY;
-                                        rsp["DBl"] = 0;
-                                        p.world.Broadcast(ref rsp);
-                                        p.Send(ref mObj);
-                                    }
+                                    rsp["U"] = p.Data.UserID;
+                                    rsp["x"] = p.world.SpawnPointX;
+                                    rsp["y"] = p.world.SpawnPointY;
+                                    rsp["DBl"] = 0;
+                                    p.world.Broadcast(ref rsp);
+                                    p.Send(ref mObj);
                                 }
-                                break;
                             }
-                        case "XPCl":
                             break;
-                        case "PDC":
+                        }
+                    case "XPCl":
+                        break;
+                    case "PDC":
+                        {
+                            if (p != null)
                             {
-                                if (p != null)
+                                if (p.world != null)
                                 {
-                                    if (p.world != null)
-                                    {
-                                        BSONObject rsp = new BSONObject();
-                                        rsp["ID"] = "UD";
-                                        rsp["U"] = p.Data.UserID;
-                                        rsp["x"] = p.world.SpawnPointX;
-                                        rsp["y"] = p.world.SpawnPointY;
-                                        rsp["DBl"] = 0;
-                                        p.world.Broadcast(ref rsp);
-                                        p.Send(ref mObj);
-                                    }
+                                    BSONObject rsp = new BSONObject();
+                                    rsp["ID"] = "UD";
+                                    rsp["U"] = p.Data.UserID;
+                                    rsp["x"] = p.world.SpawnPointX;
+                                    rsp["y"] = p.world.SpawnPointY;
+                                    rsp["DBl"] = 0;
+                                    p.world.Broadcast(ref rsp);
+                                    p.Send(ref mObj);
                                 }
-                                break;
                             }
+                            break;
+                        }
 
-                        case "Di":
-                            HandleDropItem(p, mObj);
-                            break;
-                        case MsgLabels.Ident.RemoveInventoryItem:
-                            HandleTrashItem(p, mObj);
-                            break;
-                        case "mp":
-                            // Not sure^^
-                            break;
+                    case "Di":
+                        HandleDropItem(p, mObj);
+                        break;
+                    case MsgLabels.Ident.RemoveInventoryItem:
+                        HandleTrashItem(p, mObj);
+                        break;
+                    case "mp":
+                        // Not sure^^
+                        break;
 
-                        case MsgLabels.Ident.MovePlayer:
-                            HandleMovePlayer(p, mObj);
-                            break;
+                    case MsgLabels.Ident.MovePlayer:
+                        HandleMovePlayer(p, mObj);
+                        break;
 
 
 
-                        case MsgLabels.Ident.SetBlock:
-                            HandleSetBlock(p, mObj);
-                            break;
+                    case MsgLabels.Ident.SetBlock:
+                        HandleSetBlock(p, mObj);
+                        break;
 
-                        case MsgLabels.Ident.SetBackgroundBlock:
-                            HandleSetBackgroundBlock(p, mObj);
-                            break;
+                    case MsgLabels.Ident.SetBackgroundBlock:
+                        HandleSetBackgroundBlock(p, mObj);
+                        break;
 
-                        case MsgLabels.Ident.HitBlock:
-                            HandleHitBlock(p, mObj);
-                            break;
+                    case MsgLabels.Ident.HitBlock:
+                        HandleHitBlock(p, mObj);
+                        break;
 
-                        case MsgLabels.Ident.HitBackgroundBlock:
-                            HandleHitBackground(p, mObj);
-                            break;
+                    case MsgLabels.Ident.HitBackgroundBlock:
+                        HandleHitBackground(p, mObj);
+                        break;
 
-                        case MsgLabels.Ident.SyncTime:
-                            HandleSyncTime(client);
-                            break;
-                        case MsgLabels.Ident.ChangeOrb:
-                            HandleOrbChange(p, mObj);
-                            break;
-                        case MsgLabels.Ident.ChangeWeather:
-                            HandleWeatherChange(p, mObj);
-                            break;
-                        case MsgLabels.Ident.Summon:
-                            HandleSummon(p, mObj);
-                            break;
-                        case MsgLabels.Ident.KickPlayer:
-                            HandleKick(p, mObj);
-                            break;
-                        case MsgLabels.Ident.BanPlayer:
-                            HandleBan(p, mObj);
-                            break;
-                        case MsgLabels.Ident.WorldItemUpdate:
-                            HandleWorldItemUpdate(p, mObj);
-                            break;
-                        default:
-                            pServer.OnPing(client, 1);
-                            break;
-                    }
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.ToString());
+                    case MsgLabels.Ident.SyncTime:
+                        HandleSyncTime(client);
+                        break;
+                    case MsgLabels.Ident.ChangeOrb:
+                        HandleOrbChange(p, mObj);
+                        break;
+                    case MsgLabels.Ident.ChangeWeather:
+                        HandleWeatherChange(p, mObj);
+                        break;
+                    case MsgLabels.Ident.Summon:
+                        HandleSummon(p, mObj);
+                        break;
+                    case MsgLabels.Ident.KickPlayer:
+                        HandleKick(p, mObj);
+                        break;
+                    case MsgLabels.Ident.BanPlayer:
+                        HandleBan(p, mObj);
+                        break;
+                    case MsgLabels.Ident.WorldItemUpdate:
+                        HandleWorldItemUpdate(p, mObj);
+                        break;
+                    default:
+                        pServer.OnPing(client, 1);
+                        break;
                 }
 
 
@@ -568,7 +562,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /givegems , /shop , /buyvip";
+                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /givegems , /shop";
                         break;
 
                     case "/gm":
@@ -642,14 +636,14 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/shop":
-                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Mod Pack | Purchase Command: /modpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack";
+                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Influencer Pack | Purchase Command: /infpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack";
                         break;
 
                     case "/wingspack":
-                        if (p.Data.Gems >= 200000)
+                        if (p.Data.Gems >= 150000)
                         {
-                            res = "Bought Wings Pack for 200.000 Gems!";
-                            p.RemoveGems(200000);
+                            res = "Bought Wings Pack for 150.000 Gems!";
+                            p.RemoveGems(150000);
                             p.inventoryManager.wingsPack();
                             BSONObject aws = new BSONObject("DR");
                             p.Send(ref aws);
@@ -657,7 +651,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
+                            res = "Wings Pack is 150.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
                         }
 
                         break;
@@ -682,30 +676,29 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
 
-                    case "/modpack":
-                        if (p.Data.Gems >= 30000000)
+                    case "/infpack":
+                        if (p.Data.Gems >= 2000000)
                         {
-                            res = "Bought Mod Pack for 30000000 Gems!";
-                            p.RemoveGems(30000000);
-                            p.pSettings.Set(PlayerSettings.Bit.SET_MOD);
-                            p.inventoryManager.modPack();
+                            res = "Bought Mod Pack for 2000000 Gems!";
+                            p.RemoveGems(2000000);
+                            p.pSettings.Set(PlayerSettings.Bit.SET_INFLUENCER);
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
 
                         }
                         else
                         {
-                            res = "Moderator Pack is 30.000.000 Gems. Not enough gems to purchase!\nModerator Pack includes: @In-Game Moderator Rank + İnvisability Power + Mod Hoodie";
+                            res = "Influencer Pack is 2.000.000 Gems. Not enough gems to purchase!\nInfluencer Role Pack includes: @In-Game Influencer Role + Instant 100.000 Gems Claim";
                         }
 
                         break;
 
 
                     case "/handpack":
-                        if (p.Data.Gems >= 150000)
+                        if (p.Data.Gems >= 100000)
                         {
-                            res = "Bought Hand Pack for 150000 Gems!";
-                            p.RemoveGems(150000);
+                            res = "Bought Hand Pack for 100000 Gems!";
+                            p.RemoveGems(100000);
                             p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -713,17 +706,17 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Hand Pack is 150.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
+                            res = "Hand Pack is 100.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
                         }
 
                         break;
 
 
                     case "/maskpack":
-                        if (p.Data.Gems >= 100000)
+                        if (p.Data.Gems >= 75000)
                         {
-                            res = "Bought Mask Pack for 100000 Gems!";
-                            p.RemoveGems(100000);
+                            res = "Bought Mask Pack for 75000 Gems!";
+                            p.RemoveGems(75000);
                             p.inventoryManager.maskPack();
                             BSONObject awsaaq = new BSONObject("DR");
                             p.Send(ref awsaaq);
@@ -731,7 +724,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Mask Pack is 100.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
+                            res = "Mask Pack is 75.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
                         }
 
                         break;
@@ -759,49 +752,6 @@ namespace PixelWorldsServer2.Networking.Server
 
 
 
-                    case "/buyvip":
-                        if (p.Data.Gems >= 1000000)
-                        {
-                            res = "INFLUENCER Role Have been give successfully.";
-                            p.pSettings.Set(PlayerSettings.Bit.SET_VIP);
-                            p.RemoveGems(1000000);
-                            BSONObject r = new BSONObject("DR");
-                            p.Send(ref r);
-                            using (var client = new DiscordWebhookClient("https://discord.com/api/webhooks/1073725309079265331/8yNyTL_6aSr95dwmEuVHdY8cWnxUoQ_dOfQJOLwQTeIKDOfu9FzvG0d5aJRVUZ98f4-g"))
-                            {
-                                var embed = new EmbedBuilder
-                                {
-                                    Title = "🔒 Role Purchase",
-                                    Description = "LTPS | Efe & Erdem"
-                                };
-
-                                client.SendMessageAsync(text: "Someone just bought INFLUENCER role! Nice everyone.", embeds: new[] { embed.Build() });
-                            }
-
-
-                        }
-
-                        else
-                        {
-                            res = "@INFLUENCER role cost 1.000.000 Gems, you cant afford it. Break more blocks to gain gems.";
-
-                        }
-                        break;
-
-
-                        break;
-
-                    case "/vipitems":
-                            p.inventoryManager.vipEsyaVer();
-                            res = "Added 201 Each VIP items to your inventory.";
-                            BSONObject aw = new BSONObject("DR");
-                            p.Send(ref aw);
-                        
-                      
-
-                        break;
-
-
                     case "/give":
                         if (tokCount < 2)
                         {
@@ -821,7 +771,7 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                if (Shop.ContainsItem(id) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
+                                if (Shop.ContainsItem(id))
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
@@ -1528,11 +1478,13 @@ namespace PixelWorldsServer2.Networking.Server
             if (blockType == 273)
                 return;
 
+
+
             var invIt = p.inventoryManager.HasItemAmountInInventory((BlockType)blockType, (InventoryItemType)it.type);
             if (!invIt)
                 return;
-
-            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID))))
+        
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
@@ -1585,7 +1537,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             var w = p.world;
 
-            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID))))
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
@@ -1798,12 +1750,8 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["ID"] = "PL";
             mObj["U"] = bObj["U"].stringValue;
             mObj["Idx"] = 0;
-            Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
-            if (player.Data.UserID == bObj["U"].stringValue)
-            {
-                p.world.Broadcast(ref mObj);
-                p.world.RemovePlayer(player);
-            }
+            p.world.Broadcast(ref mObj);
+            p.world.RemovePlayer(p);
         }
         public void HandleBan(Player p, BSONObject bObj)
         {
@@ -1820,12 +1768,8 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["ID"] = "PL";
             mObj["U"] = bObj["U"].stringValue;
             mObj["Idx"] = 1;
-            Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
-            if (player.Data.UserID == bObj["U"].stringValue)
-            {
-                p.world.Broadcast(ref mObj);
-                p.world.RemovePlayer(player);
-            }
+            p.world.Broadcast(ref mObj);
+            p.world.RemovePlayer(p);
         }
         public void HandleWorldItemUpdate(Player p, BSONObject bObj)
         {
