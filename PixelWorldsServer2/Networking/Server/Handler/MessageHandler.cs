@@ -640,10 +640,10 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/wingspack":
-                        if (p.Data.Gems >= 200000)
+                        if (p.Data.Gems >= 150000)
                         {
-                            res = "Bought Wings Pack for 200.000 Gems!";
-                            p.RemoveGems(200000);
+                            res = "Bought Wings Pack for 150.000 Gems!";
+                            p.RemoveGems(150000);
                             p.inventoryManager.wingsPack();
                             BSONObject aws = new BSONObject("DR");
                             p.Send(ref aws);
@@ -651,7 +651,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
+                            res = "Wings Pack is 150.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
                         }
 
                         break;
@@ -696,10 +696,10 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/handpack":
-                        if (p.Data.Gems >= 150000)
+                        if (p.Data.Gems >= 100000)
                         {
-                            res = "Bought Hand Pack for 150000 Gems!";
-                            p.RemoveGems(150000);
+                            res = "Bought Hand Pack for 100000 Gems!";
+                            p.RemoveGems(100000);
                             p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -707,17 +707,17 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Hand Pack is 150.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Scythe , Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
+                            res = "Hand Pack is 100.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
                         }
 
                         break;
 
 
                     case "/maskpack":
-                        if (p.Data.Gems >= 100000)
+                        if (p.Data.Gems >= 75000)
                         {
-                            res = "Bought Mask Pack for 100000 Gems!";
-                            p.RemoveGems(100000);
+                            res = "Bought Mask Pack for 75000 Gems!";
+                            p.RemoveGems(75000);
                             p.inventoryManager.maskPack();
                             BSONObject awsaaq = new BSONObject("DR");
                             p.Send(ref awsaaq);
@@ -725,7 +725,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Mask Pack is 100.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
+                            res = "Mask Pack is 75.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
                         }
 
                         break;
@@ -1495,6 +1495,7 @@ namespace PixelWorldsServer2.Networking.Server
                     for (int i = 0; i < 5; i++)
                         w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
 
+                  
 
                     tile.fg.id = 0;
                     tile.fg.damage = 0;
@@ -1521,11 +1522,13 @@ namespace PixelWorldsServer2.Networking.Server
             if (blockType == 273)
                 return;
 
+
+
             var invIt = p.inventoryManager.HasItemAmountInInventory((BlockType)blockType, (InventoryItemType)it.type);
             if (!invIt)
                 return;
-
-            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetPlayerWhoOwnsLockId()==p.Data.UserID))
+        
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
@@ -1564,6 +1567,7 @@ namespace PixelWorldsServer2.Networking.Server
                     w.Broadcast(ref bbobj);
                 }
                 p.inventoryManager.RemoveItemsFromInventory((BlockType)blockType, 0);
+
             }
         }
 
@@ -1577,7 +1581,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             var w = p.world;
 
-            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetPlayerWhoOwnsLockId() == p.Data.UserID))
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
