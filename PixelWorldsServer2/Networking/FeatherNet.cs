@@ -378,7 +378,7 @@ namespace FeatherNet
         {
             if (listener == null)
             {
-                listener = new TcpListener(port);
+                listener = new TcpListener(IPAddress.Any, port);
             }
         }
 
