@@ -39,6 +39,8 @@ namespace PixelWorldsServer2.Database
         {
 
             AddShopOffer("WorldLock", 3500, new KeyTriple<int, InventoryItemType, int>(413, InventoryItemType.Block, 1));
+            AddShopOffer("GoldLock", 3500, new KeyTriple<int, InventoryItemType, int>(414, InventoryItemType.Block, 1));
+            AddShopOffer("GoldLock2", 3500, new KeyTriple<int, InventoryItemType, int>(416, InventoryItemType.Block, 1));
             AddShopOffer("PlatinumLock", 3500 * 100, new KeyTriple<int, InventoryItemType, int>(796, InventoryItemType.Block, 1));
             AddShopOffer("PetFoodDogPremium", 1250, new KeyTriple<int, InventoryItemType, int>(3856, InventoryItemType.Block, 1));
             AddShopOffer("SmallLock", 100, new KeyTriple<int, InventoryItemType, int>(410, InventoryItemType.Block, 1));
