@@ -188,11 +188,9 @@ namespace PixelWorldsServer2.Networking.Server
             int tileLen = tilos.Length;
             using (MemoryStream ms = new MemoryStream())
             {
-                ms.WriteByte(0x1); // version
-                uint ownerid = 0;
-                ms.Write(BitConverter.GetBytes(ownerid));
+                ms.WriteByte(0x4); // version
 
-                int pos = 5;
+                int pos = 1;
                 for (int i = 0; i < bobj["BlockLayer"].binaryValue.Length; i = i + 2)
                 {
                     ms.Write(bobj["BlockLayer"].binaryValue, i, 2);
@@ -200,7 +198,7 @@ namespace PixelWorldsServer2.Networking.Server
                     ms.Write(bobj["WaterLayer"].binaryValue, i, 2);
                     ms.Write(bobj["WiringLayer"].binaryValue, i, 2);
 
-                    pos += 2;
+                    pos += 8;
                 }
                 ms.Write(BitConverter.GetBytes(bobj["Collectables"]["Count"].int32Value));
                 for (int i = 0; i < bobj["Collectables"]["Count"].int32Value; i++)
@@ -223,8 +221,10 @@ namespace PixelWorldsServer2.Networking.Server
                     ms.Write(BitConverter.GetBytes(col["InventoryType"].int32Value));
                     ms.Write(BitConverter.GetBytes(gemType));
                 }
-                ms.Write(BitConverter.GetBytes(bobj["WorldBackgroundType"]["WorldBackgroundType"].int32Value));
-                ms.Write(BitConverter.GetBytes(bobj["WorldWeatherType"]["WorldWeatherType"].int32Value));
+                if(bobj.ContainsKey("WorldBackgroundType"))ms.Write(BitConverter.GetBytes(bobj["WorldBackgroundType"]["Count"].int32Value));
+                else { ms.Write(BitConverter.GetBytes((int)0)); }
+                if(bobj.ContainsKey("WorldWeatherType"))ms.Write(BitConverter.GetBytes(bobj["WorldWeatherType"]["Count"].int32Value));
+                else { ms.Write(BitConverter.GetBytes((int)0)); }
                 ms.Write(BitConverter.GetBytes((int)0));
                 File.WriteAllBytes(path, (ms.ToArray()));
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
