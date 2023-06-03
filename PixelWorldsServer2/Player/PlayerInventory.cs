@@ -175,13 +175,11 @@ namespace PixelWorldsServer2
         public Dictionary<int, short> handPack()
         {
             Dictionary<int, short> inv = new Dictionary<int, short>();
-            this.AddItemToInventory((WorldInterface.BlockType)4762, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)3482, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)3483, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)4281, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)3483, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)4281, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1306, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)1305, InventoryItemType.Weapon, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2293, InventoryItemType.Weapon, 1);
             this.AddItemToInventory((WorldInterface.BlockType)217, InventoryItemType.Weapon, 1);
             this.AddItemToInventory((WorldInterface.BlockType)606, InventoryItemType.Weapon, 1);
             this.AddItemToInventory((WorldInterface.BlockType)595, InventoryItemType.Weapon, 1);
@@ -196,12 +194,12 @@ namespace PixelWorldsServer2
         public void RegularDefaultInventory()
         {
             // bunch of cool items
-            this.AddItemToInventory((WorldInterface.BlockType)750, InventoryItemType.Consumable, 500);
+            this.AddItemToInventory((WorldInterface.BlockType)3058, InventoryItemType.Familiar, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4269, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)2152, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)3176, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)592, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)2275, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)2275, InventoryItemType.Weapon, 1);
             this.AddItemToInventory((WorldInterface.BlockType)2358, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4879, InventoryItemType.WearableItem, 1);
             this.AddItemToInventory((WorldInterface.BlockType)4880, InventoryItemType.WearableItem, 1);
