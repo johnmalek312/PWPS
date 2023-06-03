@@ -223,8 +223,8 @@ namespace PixelWorldsServer2.Networking.Server
                     ms.Write(BitConverter.GetBytes(col["InventoryType"].int32Value));
                     ms.Write(BitConverter.GetBytes(gemType));
                 }
-                ms.Write(BitConverter.GetBytes(col["WorldBackgroundType"]["WorldBackgroundType"].int32Value));
-                ms.Write(BitConverter.GetBytes(col["WorldWeatherType"]["WorldWeatherType"].int32Value));
+                ms.Write(BitConverter.GetBytes(bobj["WorldBackgroundType"]["WorldBackgroundType"].int32Value));
+                ms.Write(BitConverter.GetBytes(bobj["WorldWeatherType"]["WorldWeatherType"].int32Value));
                 ms.Write(BitConverter.GetBytes((int)0));
                 File.WriteAllBytes(path, (ms.ToArray()));
                 SpinWait.SpinUntil(() => Util.IsFileReady(path));
