@@ -32,13 +32,18 @@ namespace PixelWorldsServer2.DataManagement
 
         public static BSONObject pingBson = new BSONObject("p");
 
-        public enum JR 
+        public enum WorldJoinResult : byte
         {
-            SUCCESS,
-            UNAVAILABLE = 2,
-            MAINTENANCE,
-            INVALID_NAME
+            Ok,
+            TooManyPlayersInServer,
+            TooManyPlayersInWorld,
+            MaintenanceStarting,
+            NotValidWorldName,
+            UserIsBanned,
+            AdminLockedWorld,
+            UserHasWarning
         }
+
         public struct PlayerData // pD
         {
             public const string ByteCoinAmount = "bcs";

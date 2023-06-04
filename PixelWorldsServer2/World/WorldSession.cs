@@ -36,6 +36,7 @@ namespace PixelWorldsServer2.World
 
         public LockWorldData lockWorldData;
         public List<Player> Players => players;
+        public Dictionary<string, long> banList = new Dictionary<string, long>();
         public void AddPlayer(Player p)
         {
             if (HasPlayer(p) == -1)
@@ -572,6 +573,19 @@ namespace PixelWorldsServer2.World
         {
             WorldItemBase worldItem = worldItems.Find(item => item.itemId == id);
             return worldItem;
+        }
+
+        public bool IsPlayerBanned(Player p)
+        {
+            if(banList.ContainsKey(p.Data.UserID))
+            {
+                if (banList[p.Data.UserID] > DateTime.UtcNow.Ticks)
+                {
+                    return true;
+                }
+            }
+            banList.Remove(p.Data.UserID);
+            return false;
         }
 
         ~WorldSession()

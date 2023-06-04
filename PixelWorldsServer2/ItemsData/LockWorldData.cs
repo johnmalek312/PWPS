@@ -185,11 +185,11 @@ namespace PixelWorldsServer2
         // Token: 0x06000C9D RID: 3229 RVA: 0x000434E6 File Offset: 0x000418E6
         public void RemovePlayerFromPlayersWhoHaveAccessToLock(string playerId)
         {
-            this.playersWhoHaveAccessToLock.RemoveAll(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined)==playerId);
+            this.playersWhoHaveAccessToLock.RemoveAll(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId);
         }
         public void RemovePlayerFromPlayersWhoHaveMinorAccessToLock(string playerId)
         {
-            this.playersWhoHaveMinorAccessToLock.RemoveAll(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined)==playerId);
+            this.playersWhoHaveMinorAccessToLock.RemoveAll(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId);
         }
 
         // Token: 0x06000C9E RID: 3230 RVA: 0x000434F8 File Offset: 0x000418F8
@@ -199,7 +199,7 @@ namespace PixelWorldsServer2
             {
                 return true;
             }
-            return (this.playersWhoHaveAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId) || this.playersWhoHaveMinorAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId));
+            return this.playersWhoHaveMinorAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId);
         }
         public bool DoesPlayerHaveMinorAccessToLock(string playerId)
         {
@@ -207,7 +207,8 @@ namespace PixelWorldsServer2
             {
                 return true;
             }
-            return this.playersWhoHaveMinorAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId);
+            return (this.playersWhoHaveAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId) || this.playersWhoHaveMinorAccessToLock.Any(combined => PlayerIdNameHelper.GetPlayerIdFromCombined(combined) == playerId));
+
         }
 
         // Token: 0x06000C9F RID: 3231 RVA: 0x0004356F File Offset: 0x0004196F
