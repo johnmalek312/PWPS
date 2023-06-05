@@ -149,13 +149,10 @@ namespace PixelWorldsServer2
             this.AddItemToInventory((WorldInterface.BlockType)4267, InventoryItemType.WearableItem, 1);
         }
 
-        public void modPack()
+        public void farmablePack()
         {
 
-            // Mod pack
-            this.AddItemToInventory((WorldInterface.BlockType)2096, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)1038, InventoryItemType.WearableItem, 1);
-            this.AddItemToInventory((WorldInterface.BlockType)794, InventoryItemType.WearableItem, 1);
+            this.AddItemToInventory((WorldInterface.BlockType)762, InventoryItemType.Block, 150);
         }
 
         public void maskPack()
