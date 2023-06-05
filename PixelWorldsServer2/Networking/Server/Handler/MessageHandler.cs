@@ -642,14 +642,14 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/shop":
-                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Influencer Pack | Purchase Command: /infpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack";
+                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Influencer Pack | Purchase Command: /infpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack\n6- Farmable Pack | Purchase Command: /farmablepack";
                         break;
 
                     case "/wingspack":
-                        if (p.Data.Gems >= 150000)
+                        if (p.Data.Gems >= 200000)
                         {
-                            res = "Bought Wings Pack for 150.000 Gems!";
-                            p.RemoveGems(150000);
+                            res = "Bought Wings Pack for 200.000 Gems!";
+                            p.RemoveGems(200000);
                             p.inventoryManager.wingsPack();
                             BSONObject aws = new BSONObject("DR");
                             p.Send(ref aws);
@@ -657,7 +657,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Wings Pack is 150.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
+                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
                         }
 
                         break;
@@ -683,10 +683,10 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/infpack":
-                        if (p.Data.Gems >= 2000000)
+                        if (p.Data.Gems >= 4000000)
                         {
-                            res = "Bought Mod Pack for 2000000 Gems!";
-                            p.RemoveGems(2000000);
+                            res = "Bought Mod Pack for 4000000 Gems!";
+                            p.RemoveGems(4000000);
                             p.pSettings.Set(PlayerSettings.Bit.SET_INFLUENCER);
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -694,17 +694,17 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Influencer Pack is 2.000.000 Gems. Not enough gems to purchase!\nInfluencer Role Pack includes: @In-Game Influencer Role + Instant 100.000 Gems Claim";
+                            res = "Influencer Pack is 4.000.000 Gems. Not enough gems to purchase!\nInfluencer Role Pack includes: @In-Game Influencer Role + Instant 100.000 Gems Claim";
                         }
 
                         break;
 
 
                     case "/handpack":
-                        if (p.Data.Gems >= 100000)
+                        if (p.Data.Gems >= 150000)
                         {
-                            res = "Bought Hand Pack for 100000 Gems!";
-                            p.RemoveGems(100000);
+                            res = "Bought Hand Pack for 150000 Gems!";
+                            p.RemoveGems(150000);
                             p.inventoryManager.handPack();
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -712,7 +712,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Hand Pack is 100.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
+                            res = "Hand Pack is 150.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
                         }
 
                         break;
@@ -736,7 +736,25 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
 
-                  
+                    case "/farmablepack":
+                        if (p.Data.Gems >= 10000)
+                        {
+                            res = "Bought Mask Pack for 10000 Gems!";
+                            p.RemoveGems(10000);
+                            p.inventoryManager.farmablePack();
+                            BSONObject awsaaqw = new BSONObject("DR");
+                            p.Send(ref awsaaqw);
+
+                        }
+                        else
+                        {
+                            res = "Farmable Pack is 10.000 Gems. Not enough gems to purchase!\nFarmable Pack includes: 150 Pot of Gold (1 Block gives up to 100-150 gems each)";
+                        }
+
+                        break;
+
+
+
 
 
 
@@ -1190,7 +1208,7 @@ namespace PixelWorldsServer2.Networking.Server
                  p.world.WorldName,
                  p.world.WorldName,
                  1,
-                    "  --------------------\nWelcome to our server, If you need any help please join our discord server here: https://ltps.xyz/");
+                    "--------------------\nWelcome to our server, Wanna purchase some in-game gems? Checkout: https://ltps.xyz/shop");
 
             p.Send(ref cObj);
 
@@ -1455,6 +1473,8 @@ namespace PixelWorldsServer2.Networking.Server
                 if (tile.fg.id <= 0 || tile.fg.id == 110)
                     return;
 
+            
+
                 if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
                 {
                     p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
@@ -1483,18 +1503,35 @@ namespace PixelWorldsServer2.Networking.Server
                         w.Drop(tile.fg.id, 1, pX, pY, 0);
                         HandleCollect(p, w.colID);
                     }
-
-                    for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
-
                   
 
-                    tile.fg.id = 0;
-                    tile.fg.damage = 0;
+
+
+                    for (int i = 0; i < 5; i++)
+
+                        if (tile.fg.id == 762)
+                        {
+                            w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(4));
+                        }
+                        else
+                            
+                     w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
+                      tile.fg.id = 0;
+                      tile.fg.damage = 0;
+                      return;
+
+            
+
                 }
 
+
+
                 tile.fg.lastHit = Util.GetSec();
+
+
+
             }
+
         }
 
         public void HandleSetBlock(Player p, BSONObject bObj)
