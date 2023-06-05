@@ -241,6 +241,10 @@ namespace PixelWorldsServer2.Database
             AddShopOffer("WALLBUG1", 1000000000, new KeyTriple<int, InventoryItemType, int>(2049, InventoryItemType.Block, 1));
             AddShopOffer("WALLBUG2", 1000000000, new KeyTriple<int, InventoryItemType, int>(2050, InventoryItemType.Block, 1));
 
+
+            // FARMABLE PACK VERY IMPORTANT
+            AddShopOffer("POTOFGOLD", 1000000000, new KeyTriple<int, InventoryItemType, int>(750, InventoryItemType.Block, 1));
+            AddShopOffer("POTOFGEMS", 1000000000, new KeyTriple<int, InventoryItemType, int>(762, InventoryItemType.Block, 1));
         }
     }
 }
