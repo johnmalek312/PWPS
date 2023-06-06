@@ -1816,7 +1816,12 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["U"] = bObj["U"].stringValue;
             mObj["PX"] = Convert.ToInt32((float)p.Data.PosX * Math.PI);
             mObj["PY"] = Convert.ToInt32((float)p.Data.PosY * Math.PI);
-            p.Send(ref mObj);
+            Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
+            if (player.Data.UserID == bObj["U"].stringValue)
+            {
+                player.Send(ref mObj);
+                //p.world.RemovePlayer(player);
+            }
 
 
         }
