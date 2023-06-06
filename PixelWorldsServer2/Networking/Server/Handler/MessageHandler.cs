@@ -798,7 +798,7 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                if (Shop.ContainsItem(id))
+                                if (Shop.ContainsItem(id) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
@@ -1919,17 +1919,17 @@ namespace PixelWorldsServer2.Networking.Server
                 BSONObject wObj = new BSONObject("GRW");
                 wObj["WN"] = worldsData[0];
                 wObj["W"] = worldsData[1];
-                List<string> count = new List<string>();
+                List<int> count = new List<int>();
                 var wmgr = pServer.GetWorldManager();
                 foreach (string worldName in worldsData[0])
                 {
                     if (wmgr.GetByName(worldName) != null)
                     {
-                        count.Add(wmgr.GetByName(worldName).Players.Count.ToString());
+                        count.Add(wmgr.GetByName(worldName).Players.Count);
                     }
                     else
                     {
-                        count.Add("0");
+                        count.Add(0);
                     }
                 }
                 wObj["Ct"] = count;

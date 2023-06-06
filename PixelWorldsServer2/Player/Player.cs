@@ -14,6 +14,7 @@ using PixelWorldsServer2.Networking.Server;
 using PixelWorldsServer2.World;
 using static PixelWorldsServer2.World.WorldInterface;
 using System.Linq;
+using System.Collections;
 
 namespace PixelWorldsServer2
 {
@@ -257,11 +258,55 @@ namespace PixelWorldsServer2
         {
             if(this.Data.recentWorlds.WorldNames.Count() < Config.maxRecentWorlds)
             {
+                if(this.Data.recentWorlds.WorldNames.Contains(worldName))
+                {
+                    Stack<string> tempStack = new Stack<string>();
+                    Stack<string> tempStack2 = new Stack<string>();
+
+                    while (Data.recentWorlds.WorldNames.Count > 0)
+                    {
+                        string currentElement = Data.recentWorlds.WorldNames.Pop();
+                        string currentElement2 = Data.recentWorlds.WorldIds.Pop();
+
+                        if (currentElement != worldName)
+                        {
+                            tempStack.Push(currentElement);
+                            tempStack2.Push(currentElement2);
+                        }
+                    }
+                    while (tempStack.Count > 0)
+                    {
+                        Data.recentWorlds.WorldNames.Push(tempStack.Pop());
+                        Data.recentWorlds.WorldIds.Push(tempStack2.Pop());
+                    }
+                }
                 this.Data.recentWorlds.WorldNames.Push(worldName);
                 this.Data.recentWorlds.WorldIds.Push(worldId);
             }
             else
             {
+                if (this.Data.recentWorlds.WorldNames.Contains(worldName))
+                {
+                    Stack<string> tempStack = new Stack<string>();
+                    Stack<string> tempStack2 = new Stack<string>();
+
+                    while (Data.recentWorlds.WorldNames.Count > 0)
+                    {
+                        string currentElement = Data.recentWorlds.WorldNames.Pop();
+                        string currentElement2 = Data.recentWorlds.WorldIds.Pop();
+
+                        if (currentElement != worldName)
+                        {
+                            tempStack.Push(currentElement);
+                            tempStack2.Push(currentElement2);
+                        }
+                    }
+                    while (tempStack.Count > 0)
+                    {
+                        Data.recentWorlds.WorldNames.Push(tempStack.Pop());
+                        Data.recentWorlds.WorldIds.Push(tempStack2.Pop());
+                    }
+                }
                 this.Data.recentWorlds.WorldNames.Pop();
                 this.Data.recentWorlds.WorldIds.Pop();
                 this.Data.recentWorlds.WorldNames.Push(worldName);
