@@ -23,7 +23,7 @@ namespace PixelWorldsServer2.World
         private List<Player> players = new List<Player>();
         public Dictionary<int, Collectable> collectables = new Dictionary<int, Collectable>();
         public int colID = 0;
-        public uint WorldID = 0;
+        public string WorldID = "0";
         public short SpawnPointX = 36, SpawnPointY = 24;
         public string WorldName = string.Empty;
         public WorldInterface.WeatherType WeatherType = WorldInterface.WeatherType.None;

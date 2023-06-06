@@ -77,7 +77,7 @@ namespace PixelWorldsServer2.World
             return w;
         }
 
-        public WorldSession GetByID(uint ID)
+        public WorldSession GetByID(string ID)
         {
             foreach (WorldSession s in worlds)
             {

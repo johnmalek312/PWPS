@@ -43,6 +43,7 @@ namespace PixelWorldsServer2
     public class Config
     {
         public static readonly int playersWhoHaveAccessToLockMaxAmount = 30;
+        public static readonly int maxRecentWorlds = 30;
 
         public static WorldInterface.BlockType getOrbBlockType(int orb)
         {

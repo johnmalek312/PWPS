@@ -271,6 +271,9 @@ namespace PixelWorldsServer2.Networking.Server
                         case MsgLabels.Ident.WorldItemUpdate:
                             HandleWorldItemUpdate(p, mObj);
                             break;
+                        case MsgLabels.Ident.GetRecentWorlds:
+                            HandleRecentWorlds(p);
+                            break;
                         default:
                             pServer.OnPing(client, 1);
                             break;
@@ -979,7 +982,8 @@ namespace PixelWorldsServer2.Networking.Server
             {
                 return;
             }
-
+            p.AddRecentWorld(world.WorldName, world.WorldID);
+            p.SaveRecentWorlds();
             world.AddPlayer(p);
 
             BSONObject resp = new BSONObject();
@@ -1365,8 +1369,16 @@ namespace PixelWorldsServer2.Networking.Server
 
         public void HandleTryToJoinWorldRandom(Player p)
         {
-            var worlds = pServer.GetWorldManager().GetWorlds();
+            List<WorldSession> worlds = new List<WorldSession>();
 
+            foreach (var world in pServer.GetWorldManager().GetWorlds())
+            {
+                int pC = world.Players.Count;
+                if (pC > 0)
+                {
+                    worlds.Add(world);
+                }
+            }
             if (worlds.Count > 0)
             {
                 var w = worlds[new Random().Next(worlds.Count)];
@@ -1896,6 +1908,34 @@ namespace PixelWorldsServer2.Networking.Server
                 p.world.Broadcast(ref wObj);
 
             }
+        }
+        public void HandleRecentWorlds(Player p) 
+        {
+            if(p==null) return;
+            else
+            {
+                var worldsData = p.GetRecentWorlds();
+
+                BSONObject wObj = new BSONObject("GRW");
+                wObj["WN"] = worldsData[0];
+                wObj["W"] = worldsData[1];
+                List<string> count = new List<string>();
+                var wmgr = pServer.GetWorldManager();
+                foreach (string worldName in worldsData[0])
+                {
+                    if (wmgr.GetByName(worldName) != null)
+                    {
+                        count.Add(wmgr.GetByName(worldName).Players.Count.ToString());
+                    }
+                    else
+                    {
+                        count.Add("0");
+                    }
+                }
+                wObj["Ct"] = count;
+                p.Send(ref wObj);
+            }
+
         }
         public static bool IsAccessFormatValid(string input)
         {

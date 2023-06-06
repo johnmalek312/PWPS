@@ -13,6 +13,7 @@ using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.Networking.Server;
 using PixelWorldsServer2.World;
 using static PixelWorldsServer2.World.WorldInterface;
+using System.Linq;
 
 namespace PixelWorldsServer2
 {
@@ -38,6 +39,7 @@ namespace PixelWorldsServer2
             public int Anim, Dir;
             public AdminStatus adminStatus;
             public BSONObject BSON;
+            public RecentWorlds recentWorlds;
         }
 
         public enum AdminStatus
@@ -78,6 +80,7 @@ namespace PixelWorldsServer2
                 pData.Inventory = new Dictionary<int, short>();
                 pData.BSON = new BSONObject();
                 fClient.data = pData; // interlink
+                pData.recentWorlds = new RecentWorlds();
             }
         }
         public Player(SQLiteDataReader reader)
@@ -91,6 +94,8 @@ namespace PixelWorldsServer2
             pData.LastIP = (string)reader["IP"];
             pData.adminStatus = (Player.AdminStatus)Convert.ToInt32(reader["AdminStatus"]);
             object inven = reader["Inventory"];
+            pData.recentWorlds = new RecentWorlds();
+            this.SetRecentWorlds((string)reader["RecentWorlds"]);
             byte[] invData = null;
 
             if (!Convert.IsDBNull(inven))
@@ -195,6 +200,78 @@ namespace PixelWorldsServer2
         public bool IsUnregistered()
         {
             return pData.Name.StartsWith("LTPS_");
+        }
+
+        public List<string>[] GetRecentWorlds()
+        {
+            List<string>[] a = new List<string>[2];
+            a[0]  = this.Data.recentWorlds.WorldNames.ToList();
+            a[1]  = this.Data.recentWorlds.WorldIds.ToList();
+            return a;
+        }
+
+        public string GetRecentWorldsAsString()
+        {
+            List<string>[] a = new List<string>[2];
+            a[0] = this.Data.recentWorlds.WorldNames.ToList();
+            a[1] = this.Data.recentWorlds.WorldIds.ToList();
+            if (a[0].Count == 0) return "";
+            return (string.Join(",", a[0]) + ";" + string.Join(",", a[1]));
+        }
+
+        public void SaveRecentWorlds()
+        {
+            var sql = pServer.GetSQL();
+            var cmd = sql.Make("UPDATE players SET " +
+                "RecentWorlds=@RecentWorlds " + 
+                "WHERE ID=@ID");
+
+            cmd.Parameters.AddWithValue("@RecentWorlds", GetRecentWorldsAsString());
+
+            cmd.Parameters.AddWithValue("@ID", Data.UserID);
+
+            if (sql.PreparedQuery(cmd) > 0)
+            {
+                //Util.Log($"Player ID: {Data.UserID} ('{Data.Name}') saved.");
+            }
+        }
+
+        public void SetRecentWorlds(string data) 
+        {
+            if (data == null || data == "")
+            {
+                this.pData.recentWorlds.WorldIds.Clear();
+                this.pData.recentWorlds.WorldNames.Clear();
+            }
+            else
+            {
+                string[] worldsplit = data.Split(';');
+                string[] worldNames = worldsplit[0].Split(",");
+                string[] worldIds = worldsplit[1].Split(",");
+                pData.recentWorlds.WorldNames = new Stack<string>(worldNames);
+                pData.recentWorlds.WorldIds = new Stack<string>(worldIds);
+            }
+            
+        }
+        public void AddRecentWorld(string worldName, string worldId)
+        {
+            if(this.Data.recentWorlds.WorldNames.Count() < Config.maxRecentWorlds)
+            {
+                this.Data.recentWorlds.WorldNames.Push(worldName);
+                this.Data.recentWorlds.WorldIds.Push(worldId);
+            }
+            else
+            {
+                this.Data.recentWorlds.WorldNames.Pop();
+                this.Data.recentWorlds.WorldIds.Pop();
+                this.Data.recentWorlds.WorldNames.Push(worldName);
+                this.Data.recentWorlds.WorldIds.Push(worldId);
+            }
+        }
+        public class RecentWorlds
+        {
+            public Stack<string> WorldNames = new Stack<string>();
+            public Stack<string> WorldIds = new Stack<string>();
         }
 
 

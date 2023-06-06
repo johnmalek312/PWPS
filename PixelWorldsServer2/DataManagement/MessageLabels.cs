@@ -147,6 +147,7 @@ namespace PixelWorldsServer2.DataManagement
             public const string Summon = "WP";
             public const string KickPlayer = "KPl";
             public const string BanPlayer = "BPl";
+            public const string GetRecentWorlds = "GRW";
 
 
         }
