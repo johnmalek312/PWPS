@@ -148,6 +148,7 @@ namespace PixelWorldsServer2.DataManagement
             public const string KickPlayer = "KPl";
             public const string BanPlayer = "BPl";
             public const string GetRecentWorlds = "GRW";
+            public const string TeleportAdmin = "AdminTeleportedTo";
 
 
         }

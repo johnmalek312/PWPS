@@ -274,6 +274,9 @@ namespace PixelWorldsServer2.Networking.Server
                         case MsgLabels.Ident.GetRecentWorlds:
                             HandleRecentWorlds(p);
                             break;
+                        case MsgLabels.Ident.TeleportAdmin:
+                            HandleAdminTeleport(p, mObj);
+                            break;
                         default:
                             pServer.OnPing(client, 1);
                             break;
@@ -1941,6 +1944,21 @@ namespace PixelWorldsServer2.Networking.Server
                 p.Send(ref wObj);
             }
 
+        }
+        public void HandleAdminTeleport(Player p, BSONObject bObj)
+        {
+            if(p==null) return;
+            if(p.world==null)return;
+            if(p.Data.adminStatus != AdminStatus.AdminStatus_Admin && p.Data.adminStatus != AdminStatus.AdminStatus_Moderator) 
+            {
+                return;
+            }
+            BSONObject mObj = new BSONObject();
+            mObj["ID"] = "WP";
+            mObj["U"] = p.Data.UserID;
+            mObj["PX"] = bObj["1x"];
+            mObj["PY"] = bObj["1y"];
+            p.Send(ref mObj);
         }
         public static bool IsAccessFormatValid(string input)
         {
