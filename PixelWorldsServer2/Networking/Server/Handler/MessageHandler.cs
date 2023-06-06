@@ -1816,7 +1816,7 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["U"] = bObj["U"].stringValue;
             mObj["PX"] = Convert.ToInt32((float)p.Data.PosX * Math.PI);
             mObj["PY"] = Convert.ToInt32((float)p.Data.PosY * Math.PI);
-            p.world.Broadcast(ref mObj);
+            p.Send(ref mObj);
 
 
         }
