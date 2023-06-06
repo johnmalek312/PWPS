@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using static PixelWorldsServer2.Player;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -86,13 +87,14 @@ namespace PixelWorldsServer2.Networking.Server
 
             var sql = pServer.GetSQL();
 
-            var cmd = sql.Make("INSERT INTO players (ID, Name, CognitoID, Token, IP, AdminStatus) VALUES (@ID, @Name, @CognitoID, @Token, @IP, @AdminStatus)");
+            var cmd = sql.Make("INSERT INTO players (ID, Name, CognitoID, Token, IP, AdminStatus, RecentWorlds) VALUES (@ID, @Name, @CognitoID, @Token, @IP, @AdminStatus, @RecentWorlds)");
 
             cmd.Parameters.AddWithValue("@ID", ID);
             cmd.Parameters.AddWithValue("@CognitoID", cogID);
             cmd.Parameters.AddWithValue("@Token", cogToken);
             cmd.Parameters.AddWithValue("@IP", ip);
             cmd.Parameters.AddWithValue("@AdminStatus", adminStatus);
+            cmd.Parameters.AddWithValue("@RecentWorlds", "");
 
             string name = "LTPS_" + Util.RandomString(8); // Name generation soon...
             cmd.Parameters.AddWithValue("@Name", name);
