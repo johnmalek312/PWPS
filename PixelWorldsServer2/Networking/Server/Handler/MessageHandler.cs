@@ -574,7 +574,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /givegems , /shop";
+                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /shop";
                         break;
 
                     case "/gm":
@@ -775,11 +775,6 @@ namespace PixelWorldsServer2.Networking.Server
                         res = ($"{pServer.GetPlayersIngameCount()} players are online.");
                         break;
 
-                    case "/givegems":
-                        res = "Given 25 Gems";
-                        p.AddGems(25);
-                        break;
-
 
 
                     case "/give":
@@ -801,7 +796,7 @@ namespace PixelWorldsServer2.Networking.Server
                             else
                             {
 
-                                if (Shop.ContainsItem(id) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
+                                if (Shop.ContainsItem(id))
                                 {
                                     res = "This item is not free! You can purchase in the /shop or its unobtainable.";
                                     break;
