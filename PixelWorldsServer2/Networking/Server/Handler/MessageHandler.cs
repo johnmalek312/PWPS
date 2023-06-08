@@ -277,6 +277,12 @@ namespace PixelWorldsServer2.Networking.Server
                         case MsgLabels.Ident.TeleportAdmin:
                             HandleAdminTeleport(p, mObj);
                             break;
+                        case MsgLabels.Ident.AdminKill:
+                            //HandleAdminKill(p, mObj);
+                            break;
+                        case MsgLabels.Ident.AdminUnderCover:
+                           // HandleAdminUnderCover(p, mObj);
+                            break;
                         default:
                             pServer.OnPing(client, 1);
                             break;
@@ -1430,7 +1436,7 @@ namespace PixelWorldsServer2.Networking.Server
                 if (tile.bg.id <= 0)
                     return;
 
-                if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+                if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
                 {
                     p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                     return;
@@ -1485,7 +1491,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             
 
-                if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+                if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
                 {
                     p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                     return;
@@ -1567,7 +1573,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (!invIt)
                 return;
         
-            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
@@ -1620,7 +1626,7 @@ namespace PixelWorldsServer2.Networking.Server
 
             var w = p.world;
 
-            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+            if (p.world.lockWorldData != null && ((!p.world.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
             {
                 p.SelfChat("World is locked by " + pServer.GetNameFromUserID(w.lockWorldData.GetPlayerWhoOwnsLockId()));
                 return;
@@ -1719,8 +1725,7 @@ namespace PixelWorldsServer2.Networking.Server
 
                 if (bObj.ContainsKey("tp"))
                     bObj.Remove("tp");
-
-                p.world.Broadcast(ref bObj, p);
+                if(!p.Data.adminWantsToGoGhostMode)p.world.Broadcast(ref bObj, p);
             }
         }
 
@@ -1743,7 +1748,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             var w = p.world;
 
-            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
             {
                 p.SelfChat("You cant use orb at worlds which you dont own!");
                 return;
@@ -1775,7 +1780,7 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             var w = p.world;
 
-            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) || w.lockWorldData.GetIsOpen()))
+            if (p.world.lockWorldData != null && ((!w.lockWorldData.DoesPlayerHaveAccessToLock(p.Data.UserID)) && !w.lockWorldData.GetIsOpen()) && p.Data.adminStatus != AdminStatus.AdminStatus_Admin)
             {
                 p.SelfChat("You cant use orb at worlds which you dont own!");
             }
@@ -1842,6 +1847,11 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["BanFromGameReasonValue"] = "Scamming";
             //mObj["Idx"] = 0;
             Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
+            if (player == null)
+                return;
+
+            if (player == null)
+                return;
             if (player.Data.UserID == bObj["U"].stringValue)
             {
                 player.Send(ref mObj);
@@ -1867,6 +1877,11 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["BanFromGameReasonValue"] = "Scamming";
             //mObj["Idx"] = 0;
             Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
+            if (player == null)
+                return;
+
+            if (player == null)
+                return;
             if (player.Data.UserID == bObj["U"].stringValue)
             {
                 player.Send(ref mObj);
@@ -1954,6 +1969,64 @@ namespace PixelWorldsServer2.Networking.Server
             mObj["PX"] = bObj["1x"];
             mObj["PY"] = bObj["1y"];
             p.Send(ref mObj);
+        }
+        public void HandleAdminKill(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin && p.Data.adminStatus != AdminStatus.AdminStatus_Moderator)
+            {
+                return;
+            }
+            BSONObject mObj = new BSONObject();
+            mObj["ID"] = "UD";
+            mObj["U"] = bObj["U"].stringValue;
+
+            mObj["x"] = p.world.SpawnPointX;
+            mObj["y"] = p.world.SpawnPointY;
+
+        }
+        public void HandleAdminUnderCover(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin && p.Data.adminStatus != AdminStatus.AdminStatus_Moderator)
+            {
+                return;
+            }
+            if (bObj.ContainsKey("AdminsNameOnUndercoverModeValue"))
+            {
+
+                BSONObject mObj = new BSONObject();
+                if (!p.Data.adminWantsToGoUndercoverMode)
+                {
+                    p.Data.RealName = p.Data.Name;
+                    p.Data.Name = bObj["AdminsNameOnUndercoverModeValue"].stringValue;
+
+                    mObj["ID"] = "AdminSetUndercoverMode";
+                    mObj["U"] = p.Data.UserID;
+
+                    mObj["AdminsRealName"] = p.Data.Name;
+                    mObj["AdminsRealNameCountryCode"] = 999;
+                    mObj["AdminSetUndercoverModeValue"] = true;
+                    mObj["AdminOrMod"] = p.Data.adminStatus == AdminStatus.AdminStatus_Admin;
+                }
+                else if (p.Data.adminWantsToGoUndercoverMode)
+                {
+                    p.Data.Name = p.Data.RealName;
+
+                    mObj["ID"] = "AdminSetUndercoverMode";
+                    mObj["U"] = p.Data.UserID;
+
+                    mObj["AdminsRealName"] = p.Data.RealName;
+                    mObj["AdminsRealNameCountryCode"] = 999;
+                    mObj["AdminSetUndercoverModeValue"] = false;
+                    mObj["AdminOrMod"] = p.Data.adminStatus == AdminStatus.AdminStatus_Admin;
+                    
+                }
+                p.Send(ref mObj);
+            }
+
         }
         public static bool IsAccessFormatValid(string input)
         {

@@ -34,6 +34,7 @@ namespace PixelWorldsServer2
             public int Gems, Coins;
             public string CognitoID, Token;
             public string Name;
+            public string RealName;
             public string LastIP;
             public Dictionary<int, short> Inventory;
             public double PosX, PosY;
@@ -41,6 +42,12 @@ namespace PixelWorldsServer2
             public AdminStatus adminStatus;
             public BSONObject BSON;
             public RecentWorlds recentWorlds;
+            public bool adminWantsToGoThroughDoors;
+            public bool modWantsToGoThroughDoors;
+            public bool adminWantsToEditWorld;
+            public bool adminWantsToBeSummoned;
+            public bool adminWantsToGoGhostMode;
+            public bool adminWantsToGoUndercoverMode;
         }
 
         public enum AdminStatus

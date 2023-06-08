@@ -114,6 +114,7 @@ namespace PixelWorldsServer2.Networking.Server
                 p.inventoryManager = new PlayerInventoryManager(p);
                 p.inventoryManager.RegularDefaultInventory();
                 p.Data.recentWorlds = new RecentWorlds();
+
                 return p;
             }
 

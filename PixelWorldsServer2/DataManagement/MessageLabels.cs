@@ -149,8 +149,11 @@ namespace PixelWorldsServer2.DataManagement
             public const string BanPlayer = "BPl";
             public const string GetRecentWorlds = "GRW";
             public const string TeleportAdmin = "AdminTeleportedTo";
+            public const string AdminKill = "AdminKillPlayer";
+            public const string AdminUnderCover = "SetAdminWantsToGoUndercoverMode";
 
-
+            //SetAdminWantsToGoUndercoverModeValue
+            //AdminsNameOnUndercoverModeValue
         }
     }
 }
