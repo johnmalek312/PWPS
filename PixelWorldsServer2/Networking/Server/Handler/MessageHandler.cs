@@ -663,7 +663,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
+                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Songo Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
                         }
 
                         break;
@@ -1806,7 +1806,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (p.world == null)
                 return;
             bool perm = p.world.CanSummon(p, bObj["U"].stringValue);
-            if (!perm) return;
+            if (!perm & p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
 
             //var pos = Config.ConvertWorldPointToMapPoint(Convert.ToSingle(p.Data.PosX), Convert.ToSingle(p.Data.PosY));
             BSONObject mObj = new BSONObject();
@@ -1831,7 +1831,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (p.world == null)
                 return;
             bool perm = p.world.CanKick(p, bObj["U"].stringValue);
-            if (!perm) return;
+            if (!perm & p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
 
             BSONObject mObj = new BSONObject();           
             mObj["ID"] = "KPl";
@@ -1856,7 +1856,7 @@ namespace PixelWorldsServer2.Networking.Server
             if (p.world == null)
                 return;
             bool perm = p.world.CanBan(p, bObj["U"].stringValue);
-            if (!perm) return;
+            if (!perm & p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
 
             BSONObject mObj = new BSONObject();
             mObj["ID"] = "KPl";
