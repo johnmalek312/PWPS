@@ -113,7 +113,7 @@ namespace PixelWorldsServer2.Networking.Server
                 p.Data.adminStatus = (Player.AdminStatus)adminStatus;
                 p.inventoryManager = new PlayerInventoryManager(p);
                 p.inventoryManager.RegularDefaultInventory();
-
+                p.Data.recentWorlds = new RecentWorlds();
                 return p;
             }
 
