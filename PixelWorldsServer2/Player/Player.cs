@@ -263,6 +263,10 @@ namespace PixelWorldsServer2
         }
         public void AddRecentWorld(string worldName, string worldId)
         {
+            if(this.Data.recentWorlds == null)
+            {
+                this.Data.recentWorlds = new RecentWorlds();
+            }
             if(this.Data.recentWorlds.WorldNames.Count() < Config.maxRecentWorlds)
             {
                 if(this.Data.recentWorlds.WorldNames.Contains(worldName))
