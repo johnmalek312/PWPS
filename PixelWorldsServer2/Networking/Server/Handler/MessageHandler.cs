@@ -283,6 +283,12 @@ namespace PixelWorldsServer2.Networking.Server
                         case MsgLabels.Ident.AdminUnderCover:
                            // HandleAdminUnderCover(p, mObj);
                             break;
+                        case MsgLabels.Ident.AuctionHouseGetItems:
+                            HandleAuctionHouseGetItems(p, mObj);
+                            break;
+                        case MsgLabels.Ident.AuctionBuyItem:
+                            HandleAuctionHouseBuyItem(p, mObj);
+                            break;
                         default:
                             pServer.OnPing(client, 1);
                             break;
@@ -895,7 +901,24 @@ namespace PixelWorldsServer2.Networking.Server
                         return;
                     }
                 }
+                //else if()
             }
+            else if(Shop.byteOffers.ContainsKey(id))
+            {
+                var s = Shop.byteOffers[id];
+
+
+                if (p.Data.Gems >= s.price)
+                {
+                    p.RemoveGems(s.price);
+                    p.Data.Coins += s.amount;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else { return; }
 
 
 
@@ -2027,6 +2050,70 @@ namespace PixelWorldsServer2.Networking.Server
                 p.Send(ref mObj);
             }
 
+        }
+
+        public void HandleAuctionHouseGetItems(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            PWEHelper pweHelper = pServer.GetPWEHelper();
+            int IK = bObj["IK"].int32Value;
+            int index = bObj["Idx"].int32Value;
+            int itemID = IK & 16777215;
+            InventoryItemType inventoryItemType = (InventoryItemType)(IK >> 24);
+            List<PWEShopResult> pweItems = pweHelper.GetPWEItemsByInventoryKey(itemID, inventoryItemType, index);
+            BSONObject wObj = new BSONObject("AHGetItems");
+            wObj["IK"] = IK;
+            List<long> longValueList = new List<long>();
+            List<string> stringValueList = new List<string>();
+            List<int> intValueList = new List<int>();
+            foreach (PWEShopResult pweItem in pweItems)
+            {
+                longValueList.Add(pweItem.creationTime);
+                longValueList.Add(pweItem.expirationTime);
+                stringValueList.Add(pweItem.sellerID);
+                stringValueList.Add("");
+                intValueList.Add(pweItem.amount);
+                intValueList.Add(pweItem.price);
+                intValueList.Add(0);
+            }
+            wObj["AHLv"] = longValueList;
+            wObj["AHSv"] = stringValueList;
+            wObj["AHIv"] = intValueList;
+            wObj["S"] = true;
+            int count = ((pweHelper.GetPWEItemsByInventoryKey(itemID, inventoryItemType).Count + 19) / 20);
+            wObj["Idx"] = count;
+            p.Send(ref wObj);
+
+        }
+        public void HandleAuctionHouseBuyItem(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            PWEHelper pweHelper = pServer.GetPWEHelper();
+            long ticks = bObj["T"];
+            PWEShopResult pweItem = pweHelper.GetPWEShopResultByCreationTicks(ticks);
+            if (pweItem == null) return;
+            if (pweItem.sold==true) return;
+            if (p.Data.Coins < pweItem.price) return;
+            BSONObject wObj = new BSONObject("AHBuyMsg");
+            wObj["IK"] = Config.BlockTypeAndInventoryItemTypeToInt((BlockType)pweItem.itemID, pweItem.inventoryItemType);
+            wObj["T"] = ticks;
+            wObj["x"] = 40;
+            wObj["y"] = 30;
+            wObj["CDat"] = new BSONObject();
+            wObj["CDat"]["CollectableID"] = 0;
+            wObj["CDat"]["BlockType"] = pweItem.itemID;
+            wObj["CDat"]["Amount"] = pweItem.amount ;
+            wObj["CDat"]["InventoryType"] = (int)pweItem.inventoryItemType;
+            wObj["CDat"]["PosX"] = Convert.ToDouble(0);
+            wObj["CDat"]["PosY"] = Convert.ToDouble(0);
+            wObj["CDat"]["IsGem"] = false;
+            wObj["CDat"]["GemType"] = 0;
+            wObj["S"] = true;
+            p.Send(ref wObj);
+            p.RemoveCoins(pweItem.price);
+            p.inventoryManager.AddItemToInventory((WorldInterface.BlockType)pweItem.itemID, pweItem.inventoryItemType, (short)pweItem.amount);
         }
         public static bool IsAccessFormatValid(string input)
         {

@@ -204,6 +204,23 @@ namespace PixelWorldsServer2
 
             Send(ref bObj);
         }
+        public void RemoveCoins(int amt)
+        {
+            Data.Coins -= amt;
+            BSONObject bObj = new BSONObject("RBC");
+            bObj["Amt"] = amt;
+
+            Send(ref bObj);
+        }
+
+        public void AddCoins(int amt)
+        {
+            Data.Coins += amt;
+            BSONObject bObj = new BSONObject("GBC");
+            bObj["Amt"] = amt;
+
+            Send(ref bObj);
+        }
 
         public bool IsUnregistered()
         {

@@ -11,9 +11,16 @@ namespace PixelWorldsServer2.Database
         public int price;
         public List<KeyTriple<int, InventoryItemType, int>> items;
     }
+    public struct ShopByteResult
+    {
+        public int price;
+        public int amount;
+    }
+
     public class Shop
     {
         public static Dictionary<string, ShopResult> offers = new Dictionary<string, ShopResult>();
+        public static Dictionary<string, ShopByteResult> byteOffers = new Dictionary<string, ShopByteResult>();
 
         public static void AddShopOffer(string name, int price, params KeyTriple<int, InventoryItemType, int>[] items)
         {
@@ -22,6 +29,14 @@ namespace PixelWorldsServer2.Database
             sr.price = price;
 
             offers[name] = sr;
+        }
+        public static void AddShopByteOffer(string name, int price, int amount)
+        {
+            ShopByteResult sr = new ShopByteResult();
+            sr.price = price;
+            sr.amount = amount;
+
+            byteOffers[name] = sr;
         }
 
         public static bool ContainsItem(int itemId)
@@ -37,7 +52,10 @@ namespace PixelWorldsServer2.Database
 
         public static void Init()
         {
-
+            AddShopByteOffer("ByteCoin01", 800, 50);
+            AddShopByteOffer("ByteCoin02", 4000, 250);
+            AddShopByteOffer("ByteCoin03", 24000, 1500);
+            AddShopByteOffer("ByteCoin04", 96000, 6000);
             AddShopOffer("WorldLock", 3500, new KeyTriple<int, InventoryItemType, int>(413, InventoryItemType.Block, 1));
             AddShopOffer("GoldLock", 3500, new KeyTriple<int, InventoryItemType, int>(414, InventoryItemType.Block, 1));
             AddShopOffer("GoldLock2", 3500, new KeyTriple<int, InventoryItemType, int>(416, InventoryItemType.Block, 1));

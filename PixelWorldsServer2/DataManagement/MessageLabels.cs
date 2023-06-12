@@ -151,7 +151,8 @@ namespace PixelWorldsServer2.DataManagement
             public const string TeleportAdmin = "AdminTeleportedTo";
             public const string AdminKill = "AdminKillPlayer";
             public const string AdminUnderCover = "SetAdminWantsToGoUndercoverMode";
-
+            public const string AuctionHouseGetItems = "AHGetItems";
+            public const string AuctionBuyItem = "AHBuyMsg";
             //SetAdminWantsToGoUndercoverModeValue
             //AdminsNameOnUndercoverModeValue
         }

@@ -1,4 +1,5 @@
 ﻿using BasicTypes;
+using PixelWorldsServer2.DataManagement;
 using PixelWorldsServer2.World;
 using System;
 using System.Collections.Generic;
@@ -142,6 +143,11 @@ namespace PixelWorldsServer2
             return Config.defaultBlockDirection;
         }
         private static BlockDirection defaultBlockDirection = BlockDirection.None;
+
+        public static int BlockTypeAndInventoryItemTypeToInt(WorldInterface.BlockType blockType, InventoryItemType inventoryItemType)
+        {
+            return (int)((WorldInterface.BlockType)((int)inventoryItemType << 24) | blockType);
+        }
     }
 }
 

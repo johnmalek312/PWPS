@@ -32,6 +32,7 @@ namespace PixelWorldsServer2.Networking.Server
         private SQLiteManager sqlManager = null;
         private WorldManager worldManager = null;
         private AccountHelper accountHelper = null;
+        private PWEHelper pweHelper = null;
         public Dictionary<string, Player> players = new Dictionary<string, Player>();
         public object locker = new object();
         private long lastDiscordUpdateTime;
@@ -39,6 +40,7 @@ namespace PixelWorldsServer2.Networking.Server
         public MessageHandler GetMessageHandler() => msgHandler;
         public WorldManager GetWorldManager() => worldManager;
         public AccountHelper GetAccountHelper() => accountHelper;
+        public PWEHelper GetPWEHelper() => pweHelper;
         DiscordSocketClient _client = new DiscordSocketClient();
 
         // return null if non existent:
@@ -326,6 +328,7 @@ namespace PixelWorldsServer2.Networking.Server
             msgHandler = new MessageHandler(this);
             worldManager = new WorldManager(this);
             accountHelper = new AccountHelper(this);
+            pweHelper = new PWEHelper(this);
         }
         public SQLiteManager GetSQL() { return sqlManager; }
 
