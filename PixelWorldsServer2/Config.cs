@@ -148,6 +148,10 @@ namespace PixelWorldsServer2
         {
             return (int)((WorldInterface.BlockType)((int)inventoryItemType << 24) | blockType);
         }
+        public static InventoryKey IntToInventoryKey(int asInt)
+        {
+            return new InventoryKey((WorldInterface.BlockType)(asInt & 16777215), (InventoryItemType)(asInt >> 24));
+        }
     }
 }
 

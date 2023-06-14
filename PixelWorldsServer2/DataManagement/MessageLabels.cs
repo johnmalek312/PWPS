@@ -153,6 +153,9 @@ namespace PixelWorldsServer2.DataManagement
             public const string AdminUnderCover = "SetAdminWantsToGoUndercoverMode";
             public const string AuctionHouseGetItems = "AHGetItems";
             public const string AuctionBuyItem = "AHBuyMsg";
+            public const string AuctionSellItem = "AHSellMsg";
+            public const string AuctionGetitemSellHistory = "AHhE";
+            public const string AuctionGetPlayerItemListing = "AHGetPItems";
             //SetAdminWantsToGoUndercoverModeValue
             //AdminsNameOnUndercoverModeValue
         }

@@ -289,6 +289,15 @@ namespace PixelWorldsServer2.Networking.Server
                         case MsgLabels.Ident.AuctionBuyItem:
                             HandleAuctionHouseBuyItem(p, mObj);
                             break;
+                        case MsgLabels.Ident.AuctionSellItem:
+                            HandleAuctionHouseSellItem(p,mObj);
+                            break;
+                        case MsgLabels.Ident.AuctionGetitemSellHistory:
+                            HandleAuctionHouseGetItemHistory(p,mObj);
+                            break;
+                        case MsgLabels.Ident.AuctionGetPlayerItemListing:
+                            HandleAuctionHouseGetPlayerItemListing(p,mObj);
+                            break;
                         default:
                             pServer.OnPing(client, 1);
                             break;
@@ -2114,6 +2123,45 @@ namespace PixelWorldsServer2.Networking.Server
             p.Send(ref wObj);
             p.RemoveCoins(pweItem.price);
             p.inventoryManager.AddItemToInventory((WorldInterface.BlockType)pweItem.itemID, pweItem.inventoryItemType, (short)pweItem.amount);
+        }
+
+        public void HandleAuctionHouseSellItem(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+            PWEHelper pweHelper = pServer.GetPWEHelper();
+            InventoryKey inventoryKey = Config.IntToInventoryKey(bObj["IK"].int32Value);
+            int amount = bObj["Amt"].int32Value;
+            int price = bObj["BCAmt"].int32Value;
+            pweHelper.CreatePWEShopResult(price, (int)inventoryKey.blockType, inventoryKey.itemType, "1", DateTime.UtcNow.Ticks, DateTime.UtcNow.AddDays(700).Ticks, amount);
+            bObj["S"] = true;
+            p.Send(ref bObj);
+            //p.RemoveCoins(pweItem.price);
+            //p.inventoryManager.AddItemToInventory((WorldInterface.BlockType)pweItem.itemID, pweItem.inventoryItemType, (short)pweItem.amount);
+        }
+        public void HandleAuctionHouseGetItemHistory(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+            BSONObject wObj = new BSONObject("AHhE");
+            wObj["IK"] = bObj["IK"].int32Value;
+            wObj["S"] = true;
+            p.Send(ref wObj);
+            //p.RemoveCoins(pweItem.price);
+            //p.inventoryManager.AddItemToInventory((WorldInterface.BlockType)pweItem.itemID, pweItem.inventoryItemType, (short)pweItem.amount);
+        }
+        public void HandleAuctionHouseGetPlayerItemListing(Player p, BSONObject bObj)
+        {
+            if (p == null) return;
+            if (p.world == null) return;
+            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+            BSONObject wObj = new BSONObject("AHGetPItems");
+            wObj["S"] = true;
+            p.Send(ref wObj);
+            //p.RemoveCoins(pweItem.price);
+            //p.inventoryManager.AddItemToInventory((WorldInterface.BlockType)pweItem.itemID, pweItem.inventoryItemType, (short)pweItem.amount);
         }
         public static bool IsAccessFormatValid(string input)
         {
