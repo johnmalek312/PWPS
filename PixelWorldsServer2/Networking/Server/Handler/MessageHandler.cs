@@ -2144,7 +2144,6 @@ namespace PixelWorldsServer2.Networking.Server
         {
             if (p == null) return;
             if (p.world == null) return;
-            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
             BSONObject wObj = new BSONObject("AHhE");
             wObj["IK"] = bObj["IK"].int32Value;
             wObj["S"] = true;
