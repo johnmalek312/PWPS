@@ -595,7 +595,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /shop";
+                        res = "Commands >> /help , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /shop";
                         break;
 
                     case "/gm":
@@ -805,6 +805,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
+                            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
                             int id;
                             int.TryParse(tokens[1], out id);
 
@@ -816,12 +817,6 @@ namespace PixelWorldsServer2.Networking.Server
                             }
                             else
                             {
-
-                                if (Shop.ContainsItem(id))
-                                {
-                                    res = "This item is not free! You can purchase in the /shop or its unobtainable.";
-                                    break;
-                                }
                                 p.world.Drop(id, 20, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
 
                                 res = @$"Given 20 {it.name}  (ID {id}).";
