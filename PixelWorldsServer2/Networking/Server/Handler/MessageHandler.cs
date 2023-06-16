@@ -1638,6 +1638,120 @@ namespace PixelWorldsServer2.Networking.Server
                     bbobj["ItsNewWIB"] = true;
                     w.Broadcast(ref bbobj);
                 }
+                else
+                if (blockType == (short)BlockType.Door)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "DoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.BarnDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "BarnDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.CastleDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "CastleDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.ScifiDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "ScifiDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = true;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.GlassDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "GlassDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.GlassDoorTinted)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "GlassDoorTintedData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
                 p.inventoryManager.RemoveItemsFromInventory((BlockType)blockType, 0);
 
             }
