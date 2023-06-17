@@ -13,6 +13,7 @@ using System.Linq;
 using static PixelWorldsServer2.World.WorldInterface;
 using System.Threading;
 using System.Runtime.CompilerServices;
+using PixelWorldsServer2.ItemsData.Door;
 
 namespace PixelWorldsServer2.World
 {
@@ -215,6 +216,60 @@ namespace PixelWorldsServer2.World
                         {
                             dobj["W " + lockWorldData.x + " " + lockWorldData.y] = lockWorldData.GetAsBSON();
                         }
+                        else
+                        if (item.blockType == BlockType.Door)
+                        {
+                            DoorData doorData = (DoorData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.CastleDoor)
+                        {
+                            CastleDoorData scifidoorData = (CastleDoorData)item;
+                            dobj["W " + scifidoorData.x + " " + scifidoorData.y] = scifidoorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.ScifiDoor)
+                        {
+                            ScifiDoorData scifidoorData = (ScifiDoorData)item;
+                            dobj["W " + scifidoorData.x + " " + scifidoorData.y] = scifidoorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.BarnDoor)
+                        {
+                            BarnDoorData doorData = (BarnDoorData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.GlassDoor)
+                        {
+                            GlassDoorData doorData = (GlassDoorData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.GlassDoorTinted)
+                        {
+                            GlassDoorTintedData doorData = (GlassDoorTintedData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.DungeonDoor || item.blockType == BlockType.DungeonDoorWhite)
+                        {
+                            DungeonDoorData doorData = (DungeonDoorData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }/*
+                        else
+                        if (item.blockType == BlockType.DoorFactionDark)
+                        {
+                            DoorFactionDarkData doorData = (DoorFactionDarkData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }
+                        else
+                        if (item.blockType == BlockType.DoorFactionLight)
+                        {
+                            DoorFactionLightData doorData = (DoorFactionLightData)item;
+                            dobj["W " + doorData.x + " " + doorData.y] = doorData.GetAsBSON();
+                        }*/
                     }
                     if (dobj.Keys.Count > 0)
                     {
@@ -330,6 +385,69 @@ namespace PixelWorldsServer2.World
                     var a = lockWorldData.GetAsBSON();
                     dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
                 }
+                else
+                if (item.blockType == BlockType.Door)
+                {
+                    DoorData doorData = (DoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.ScifiDoor)
+                {
+                    ScifiDoorData doorData = (ScifiDoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.BarnDoor)
+                {
+                    BarnDoorData doorData = (BarnDoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.GlassDoor)
+                {
+                    GlassDoorData doorData = (GlassDoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.CastleDoor)
+                {
+                    CastleDoorData doorData = (CastleDoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.GlassDoorTinted)
+                {
+                    GlassDoorTintedData doorData = (GlassDoorTintedData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.DungeonDoor || item.blockType == BlockType.DungeonDoorWhite)
+                {
+                    DungeonDoorData doorData = (DungeonDoorData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }/*
+                else
+                if (item.blockType == BlockType.DoorFactionDark)
+                {
+                    DoorFactionDarkData doorData = (DoorFactionDarkData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }
+                else
+                if (item.blockType == BlockType.DoorFactionLight)
+                {
+                    DoorFactionLightData doorData = (DoorFactionLightData)item;
+                    var a = doorData.GetAsBSON();
+                    dobj["W " + a["posX"].int32Value + " " + a["posY"].int32Value] = a;
+                }*/
             }
 
 
@@ -478,7 +596,68 @@ namespace PixelWorldsServer2.World
                         lockWorldData = new LockWorldData(dobj[key]["itemId"].int32Value);
                         lockWorldData.SetViaBSON(dobj[key] as BSONObject);
                         if(!worldItems.Contains(lockWorldData))worldItems.Add(lockWorldData);
+                    }else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "DoorData")
+                    {
+                        DoorData doorData = new DoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
                     }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "ScifiDoorData")
+                    {
+                        ScifiDoorData doorData = new ScifiDoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "CastleDoorData")
+                    {
+                        CastleDoorData doorData = new CastleDoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "BarnDoorData")
+                    {
+                        BarnDoorData doorData = new BarnDoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "GlassDoorData")
+                    {
+                        GlassDoorData doorData = new GlassDoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "GlassDoorTintedData")
+                    {
+                        GlassDoorTintedData doorData = new GlassDoorTintedData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "DungeonDoorData")
+                    {
+                        DungeonDoorData doorData = new DungeonDoorData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }
+                    /*else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "DoorFactionLightData")
+                    {
+                        DoorFactionLightData doorData = new DoorFactionLightData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }else
+                    if (dobj[key][WorldItemBase.classKey].stringValue == "DoorFactionDarkData")
+                    {
+                        DoorFactionDarkData doorData = new DoorFactionDarkData(dobj[key]["itemId"].int32Value);
+                        doorData.SetViaBSON(dobj[key] as BSONObject);
+                        worldItems.Add(doorData);
+                    }*/
                 }
             }   
 

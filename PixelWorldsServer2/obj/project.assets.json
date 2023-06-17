@@ -693,19 +693,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\pixel\\.nuget\\packages\\": {}
+    "C:\\Users\\pc\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pixel\\Downloads\\LTPS_Source_Only_Developers\\omg\\PixelWorldsServer2\\PixelWorldsServer2.csproj",
+      "projectUniqueName": "C:\\Users\\pc\\Source\\Repos\\PWPS\\PixelWorldsServer2\\PixelWorldsServer2.csproj",
       "projectName": "PixelWorldsServer2",
-      "projectPath": "C:\\Users\\pixel\\Downloads\\LTPS_Source_Only_Developers\\omg\\PixelWorldsServer2\\PixelWorldsServer2.csproj",
-      "packagesPath": "C:\\Users\\pixel\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pixel\\Downloads\\LTPS_Source_Only_Developers\\omg\\PixelWorldsServer2\\obj\\",
+      "projectPath": "C:\\Users\\pc\\Source\\Repos\\PWPS\\PixelWorldsServer2\\PixelWorldsServer2.csproj",
+      "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\pc\\Source\\Repos\\PWPS\\PixelWorldsServer2\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\pixel\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -754,8 +759,7 @@
           "net47",
           "net471",
           "net472",
-          "net48",
-          "net481"
+          "net48"
         ],
         "assetTargetFallback": true,
         "warn": true,
@@ -764,7 +768,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files (x86)\\dotnet\\sdk\\6.0.311\\RuntimeIdentifierGraph.json"
       }
     }
   }
