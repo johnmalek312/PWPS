@@ -722,8 +722,141 @@ namespace PixelWorldsServer2.World
                 t.fg.damage = 0;
                 t.fg.lastHit = 0;
                 return true;
+            }else
+            if (blockType == (short)BlockType.Door)
+            {
+                this.itemIndex++;
+                DoorData doorData = new DoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
             }
-
+            else
+            if (blockType == (short)BlockType.ScifiDoor)
+            {
+                this.itemIndex++;
+                ScifiDoorData doorData = new ScifiDoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+            else
+            if (blockType == (short)BlockType.BarnDoor)
+            {
+                this.itemIndex++;
+                BarnDoorData doorData = new BarnDoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+            else
+            if (blockType == (short)BlockType.GlassDoor)
+            {
+                this.itemIndex++;
+                GlassDoorData doorData = new GlassDoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+            else
+            if (blockType == (short)BlockType.GlassDoorTinted)
+            {
+                this.itemIndex++;
+                GlassDoorTintedData doorData = new GlassDoorTintedData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+            else
+            if (blockType == (short)BlockType.DungeonDoor || blockType == (short)BlockType.DungeonDoorWhite)
+            {
+                this.itemIndex++;
+                DungeonDoorData doorData = new DungeonDoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
+            /* else
+             if (blockType == (short)BlockType.DoorFactionLight)
+             {
+                 this.itemIndex++;
+                 DoorFactionLightData doorData = new DoorFactionLightData(itemIndex);
+                 doorData.SetIsLocked(true);
+                 doorData.x = x;
+                 doorData.y = y;
+                 worldItems.Add(doorData);
+                 var t = this.GetTile(x, y);
+                 t.fg.id = blockType;
+                 t.fg.damage = 0;
+                 t.fg.lastHit = 0;
+                 return true;
+             }
+             else
+             if (blockType == (short)BlockType.DoorFactionDark)
+             {
+                 this.itemIndex++;
+                 DoorFactionDarkData doorData = new DoorFactionDarkData(itemIndex);
+                 doorData.SetIsLocked(true);
+                 doorData.x = x;
+                 doorData.y = y;
+                 worldItems.Add(doorData);
+                 var t = this.GetTile(x, y);
+                 t.fg.id = blockType;
+                 t.fg.damage = 0;
+                 t.fg.lastHit = 0;
+                 return true;
+             }*/
+            else
+            if (blockType == (short)BlockType.CastleDoor)
+            {
+                this.itemIndex++;
+                CastleDoorData doorData = new CastleDoorData(itemIndex);
+                doorData.SetIsLocked(true);
+                doorData.x = x;
+                doorData.y = y;
+                worldItems.Add(doorData);
+                var t = this.GetTile(x, y);
+                t.fg.id = blockType;
+                t.fg.damage = 0;
+                t.fg.lastHit = 0;
+                return true;
+            }
             Item it = ItemDB.GetByID((int)blockType);
             switch (it.type)
             {
