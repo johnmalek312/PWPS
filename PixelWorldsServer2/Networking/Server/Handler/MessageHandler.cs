@@ -281,7 +281,7 @@ namespace PixelWorldsServer2.Networking.Server
                             //HandleAdminKill(p, mObj);
                             break;
                         case MsgLabels.Ident.AdminUnderCover:
-                           // HandleAdminUnderCover(p, mObj);
+                            HandleAdminUnderCover(p, mObj);
                             break;
                         case MsgLabels.Ident.AuctionHouseGetItems:
                             HandleAuctionHouseGetItems(p, mObj);
@@ -481,6 +481,8 @@ namespace PixelWorldsServer2.Networking.Server
 
         }
 
+
+
         public string HandleCommandRegister(Player p, string[] args)
         {
             if (args.Length < 3)
@@ -595,7 +597,7 @@ namespace PixelWorldsServer2.Networking.Server
                 switch (tokens[0])
                 {
                     case "/help":
-                        res = "Commands >> /help , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /shop";
+                        res = "Commands >> /help , /give (item id) , /find (item name) , /register (username pass) , /login (username pass), /pay (username amount) , /gm , /online , /buyvip";
                         break;
 
                     case "/gm":
@@ -659,7 +661,7 @@ namespace PixelWorldsServer2.Networking.Server
                             }
                             else
                             {
-                                res = $"No item containing '{item_query}' was found.";
+                                res = $"No item containing '{item_query}' was found. Try again?";
                             }
                             break;
                         }
@@ -669,51 +671,21 @@ namespace PixelWorldsServer2.Networking.Server
                         break;
 
                     case "/shop":
-                        res = "Welcome to LTPS Shop, you can purchase in-game packs with gems here.\n1- Wings Pack | Purchase Command: /wingspack\n2- VIP Pack | Purchase Command: /vippack\n3- Influencer Pack | Purchase Command: /infpack\n4- Hand Pack | Purchase Command: /handpack\n5- Mask Pack | Purchase Command: /maskpack\n6- Farmable Pack | Purchase Command: /farmablepack";
+                        res = "The command is removed. You can purchase items via PWE Terminal now.";
                         break;
 
-                    case "/wingspack":
-                        if (p.Data.Gems >= 200000)
+                
+
+      
+
+
+
+
+                    case "/buyvip":
+                        if (p.Data.Gems >= 5000000)
                         {
-                            res = "Bought Wings Pack for 200.000 Gems!";
-                            p.RemoveGems(200000);
-                            p.inventoryManager.wingsPack();
-                            BSONObject aws = new BSONObject("DR");
-                            p.Send(ref aws);
-
-                        }
-                        else
-                        {
-                            res = "Wings Pack is 200.000 Gems. Not enough gems to purchase!\nWings Pack includes: Dark Pixie Wings , Songo Wings , Frost Wings , Ghost Wings , Wings of the Deep , Dracula Cape , Tormentor Wings , Cthulhu Wings , Dark Ifrit Wings , Dark Sprite Wings , Scorcher Wings , Flaming Wings , Bone Wings";
-                        }
-
-                        break;
-
-
-
-                    case "/vippack":
-                        if (p.Data.Gems >= 75000)
-                        {
-                            res = "Bought VIP Pack for 75000 Gems!";
-                            p.RemoveGems(75000);
-                            p.inventoryManager.vipEsyaVer();
-                            BSONObject awsa = new BSONObject("DR");
-                            p.Send(ref awsa);
-
-                        }
-                        else
-                        {
-                            res = "VIP Pack is 75.000 Gems. Not enough gems to purchase!\nWings Pack includes: Every VIP item on shop which you are not avaiable to purchase.";
-                        }
-
-                        break;
-
-
-                    case "/infpack":
-                        if (p.Data.Gems >= 4000000)
-                        {
-                            res = "Bought Mod Pack for 4000000 Gems!";
-                            p.RemoveGems(4000000);
+                            res = "Bought Mod Pack for 5000000 Gems!";
+                            p.RemoveGems(5000000);
                             p.pSettings.Set(PlayerSettings.Bit.SET_INFLUENCER);
                             BSONObject awsaa = new BSONObject("DR");
                             p.Send(ref awsaa);
@@ -721,61 +693,7 @@ namespace PixelWorldsServer2.Networking.Server
                         }
                         else
                         {
-                            res = "Influencer Pack is 4.000.000 Gems. Not enough gems to purchase!\nInfluencer Role Pack includes: @In-Game Influencer Role + Instant 100.000 Gems Claim";
-                        }
-
-                        break;
-
-
-                    case "/handpack":
-                        if (p.Data.Gems >= 150000)
-                        {
-                            res = "Bought Hand Pack for 150000 Gems!";
-                            p.RemoveGems(150000);
-                            p.inventoryManager.handPack();
-                            BSONObject awsaa = new BSONObject("DR");
-                            p.Send(ref awsaa);
-
-                        }
-                        else
-                        {
-                            res = "Hand Pack is 150.000 Gems. Not enough gems to purchase!\nHand Pack includes: Spirit Claw , Scythe , Dual Blades , Spirit Blade , Soul Cleaver , AK47 , Jake's Katana & Hilt";
-                        }
-
-                        break;
-
-
-                    case "/maskpack":
-                        if (p.Data.Gems >= 75000)
-                        {
-                            res = "Bought Mask Pack for 75000 Gems!";
-                            p.RemoveGems(75000);
-                            p.inventoryManager.maskPack();
-                            BSONObject awsaaq = new BSONObject("DR");
-                            p.Send(ref awsaaq);
-
-                        }
-                        else
-                        {
-                            res = "Mask Pack is 75.000 Gems. Not enough gems to purchase!\nMask Pack includes: Tormentor Mask , Dark Ifrit Mask , Dark Sprite Mask , Cthulhu Mask , Endless Mask , Flaming Mask , Scorcher Mask";
-                        }
-
-                        break;
-
-
-                    case "/farmablepack":
-                        if (p.Data.Gems >= 10000)
-                        {
-                            res = "Bought Mask Pack for 10000 Gems!";
-                            p.RemoveGems(10000);
-                            p.inventoryManager.farmablePack();
-                            BSONObject awsaaqw = new BSONObject("DR");
-                            p.Send(ref awsaaqw);
-
-                        }
-                        else
-                        {
-                            res = "Farmable Pack is 10.000 Gems. Not enough gems to purchase!\nFarmable Pack includes: 150 Pot of Gold (1 Block gives up to 100-150 gems each)";
+                            res = "Influencer Pack is 5.000.000 Gems. Not enough gems to purchase!\nInfluencer Role Pack includes: @In-Game Influencer Role";
                         }
 
                         break;
@@ -799,35 +717,48 @@ namespace PixelWorldsServer2.Networking.Server
 
 
                     case "/give":
-                        if (tokCount < 2)
+                        if (p.Data.Coins >= 20)
                         {
-                            res = "Usage: /give (Item ID)";
-                        }
-                        else
-                        {
-                            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
-                            int id;
-                            int.TryParse(tokens[1], out id);
-
-                            var it = ItemDB.GetByID(id);
-
-                            if (it.ID <= 0)
+                            if (tokCount < 2)
                             {
-                                res = $"Item {id} not found!";
+                                res = "Usage: /give (Item ID)";
                             }
                             else
                             {
-                                p.world.Drop(id, 20, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
+                                int id;
+                                int.TryParse(tokens[1], out id);
 
-                                res = @$"Given 20 {it.name}  (ID {id}).";
+                                var it = ItemDB.GetByID(id);
+
+                                if (it.ID <= 0)
+                                {
+                                    res = $"Item {id} not found!";
+                                }
+                                else
+                                {
+                                    if (Shop.ContainsItem(id))
+                                    {
+                                        res = "This item is unobtainable or purchaseable via bytecoins on PWE Terminal.";
+                                        break;
+                                    }
+
+                                    p.RemoveCoins(20);
+                                    p.world.Drop(id, 1, p.Data.PosX, p.Data.PosY, ItemDB.GetByID(id).type);
+
+                                    res = @$"Given 1 {it.name}  (ID {id}). Cost 20 Bytecoins.";
 
 
+                                }
                             }
+                     
+
+                        }
+                        else
+                        {
+                            res = "You need 20 each bytecoins to use this command.";
                         }
                         break;
 
-                    default:
-                        break;
                 }
 
                 if (res != "")
@@ -1488,7 +1419,13 @@ namespace PixelWorldsServer2.Networking.Server
                     double pX = x / Math.PI, pY = y / Math.PI;
 
                     for (int i = 0; i < 5; i++)
-                        w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
+                        if (tile.fg.id == 959)
+                        {
+                            w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(4));
+                        }
+                        else
+
+                            w.Drop(0, 1, pX - 0.1 + Util.rand.NextDouble(0, 0.2), pY - 0.1 + Util.rand.NextDouble(0, 0.2), 0, Util.rand.Next(3));
 
                 }
 
@@ -1638,6 +1575,177 @@ namespace PixelWorldsServer2.Networking.Server
                     bbobj["ItsNewWIB"] = true;
                     w.Broadcast(ref bbobj);
                 }
+                else
+                if (blockType == (short)BlockType.Door)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "DoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.BarnDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "BarnDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.CastleDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "CastleDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.ScifiDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "ScifiDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = true;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.GlassDoor)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "GlassDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.GlassDoorTinted)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "GlassDoorTintedData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.DungeonDoor || blockType == (short)BlockType.DungeonDoorWhite)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "DungeonDoorData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }/*
+                else
+                if (blockType == (short)BlockType.DoorFactionLight)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "DoorFactionLightData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }
+                else
+                if (blockType == (short)BlockType.DoorFactionDark)
+                {
+                    BSONObject bbobj = new BSONObject();
+                    bbobj["ID"] = "WIU";
+                    bbobj["WiB"] = new BSONObject();
+                    bbobj["WiB"]["class"] = "DoorFactionDarkData";
+                    bbobj["WiB"]["itemId"] = w.itemIndex;
+                    bbobj["WiB"]["blockType"] = (int)blockType;
+                    bbobj["WiB"]["animOn"] = false;
+                    bbobj["WiB"]["direction"] = 0;
+                    bbobj["WiB"]["anotherSprite"] = true;
+                    bbobj["WiB"]["damageNow"] = false;
+                    bbobj["WiB"]["isLocked"] = true;
+                    bbobj["x"] = x;
+                    bbobj["y"] = y;
+                    bbobj["ItsNewWIB"] = true;
+                    w.Broadcast(ref bbobj);
+                }*/
                 p.inventoryManager.RemoveItemsFromInventory((BlockType)blockType, 0);
 
             }
@@ -1849,7 +1957,10 @@ namespace PixelWorldsServer2.Networking.Server
             Player player = p.world.Players.Find(pl => pl.Data.UserID == bObj["U"].stringValue);
             if (player.Data.UserID == bObj["U"].stringValue)
             {
-                player.Send(ref mObj);
+                if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+
+                else
+                    player.Send(ref mObj);
                 //p.world.RemovePlayer(player);
             }
 
@@ -1881,7 +1992,10 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             if (player.Data.UserID == bObj["U"].stringValue)
             {
-                player.Send(ref mObj);
+                if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+
+                else
+                    player.Send(ref mObj);
                 //p.world.RemovePlayer(player);
             }
         }
@@ -1911,6 +2025,9 @@ namespace PixelWorldsServer2.Networking.Server
                 return;
             if (player.Data.UserID == bObj["U"].stringValue)
             {
+                if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+
+                else
                 player.Send(ref mObj);
                 player.world.banList.Add(player.Data.UserID, DateTime.UtcNow.AddHours(1).Ticks);
                 //p.world.RemovePlayer(player);
