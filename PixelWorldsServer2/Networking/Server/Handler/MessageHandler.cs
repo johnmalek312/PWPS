@@ -18,6 +18,8 @@ using static PixelWorldsServer2.Player;
 using static FeatherNet.FeatherEvent;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic;
+using System.Xml.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PixelWorldsServer2.Networking.Server
 {
@@ -36,7 +38,6 @@ namespace PixelWorldsServer2.Networking.Server
         public List<InventoryKey> Items => itemList;
 
         private PlayerData pData;
-
 
         public void ProcessBSONPacket(FeatherClient client, BSONObject bObj)
         {
@@ -375,7 +376,7 @@ namespace PixelWorldsServer2.Networking.Server
             pd[MsgLabels.PlayerData.InventorySlots] = 400;
             pd[MsgLabels.PlayerData.ShowOnlineStatus] = true;
             pd[MsgLabels.PlayerData.ShowLocation] = true;
-
+            pd["nameChangeCounter"] = 2;
             // pd["experienceAmount"] = 180000;
             // pd["xpAmount"] = 180000;
 
@@ -397,7 +398,13 @@ namespace PixelWorldsServer2.Networking.Server
             resp["Wo"] = "PIXELSTATION";
             resp["EmailVerified"] = true;
             resp["Email"] = p.IsUnregistered() ? "Use /register at any world" : "www.ltps.xyz";
-
+            if (p.Data.BanState == 1)
+            {
+                resp["BanState"] = "Universal";
+                resp["T"] = DateTime.UtcNow.Ticks + 864000000000 * 365;
+                resp["BPUR"] = "Admin wanted lmaoo";
+                resp["BPl"] = 1;
+            }
             p.SetClient(client); // override client...
             client.data = p.Data;
             p.isInGame = true;
@@ -480,7 +487,6 @@ namespace PixelWorldsServer2.Networking.Server
 
 
         }
-
         public string HandleCommandRegister(Player p, string[] args)
         {
             if (args.Length < 3)
@@ -516,7 +522,6 @@ namespace PixelWorldsServer2.Networking.Server
 
             return "Couldn't register right now, try again!";
         }
-
         public string HandleCommandLogin(Player p, string[] args)
         {
             if (args.Length < 3)
@@ -620,7 +625,12 @@ namespace PixelWorldsServer2.Networking.Server
                             break;
                         }
 
-
+                    case "/ban":
+                        {
+                            if (p.Data.adminStatus != AdminStatus.AdminStatus_Admin) return;
+                            res = HandleBanPlayerFromGame(p, tokens);
+                            break;
+                        }
                     case "/find":
                         {
                             if (tokCount < 2)
@@ -872,7 +882,24 @@ namespace PixelWorldsServer2.Networking.Server
             bObj["U"] = p.Data.UserID;
             p.world.Broadcast(ref bObj, p);
         }
+        public static string HandleBanPlayerFromGame(Player p, string[] args)
+        {
+            if (args.Length < 3)
+                return "Usage: /ban (player name) (Days)";
 
+            string player = args[1];//, days = args[2];
+
+            if (SQLiteManager.HasIllegalChar(player)) //|| SQLiteManager.HasIllegalChar(days))
+                return "Player Name or  has illegal character! Only letters and numbers.";
+
+            if (p.Data.BanState == 1)
+            {
+                return "Bruh Alrdy banned";
+            }
+            else
+                p.SetBan(1);
+            return "no";
+        }
         public void HandleShopPurchase(Player p, BSONObject bObj)
         {
             if (p == null)
@@ -947,7 +974,6 @@ namespace PixelWorldsServer2.Networking.Server
             }
 
             Util.Log($"Player with userID: {p.Data.UserID.ToString()} is trying to join a world [{pServer.GetPlayersIngameCount()} players online!]...");
-
             BSONObject resp = new BSONObject(MsgLabels.Ident.TryToJoinWorld);
             resp[MsgLabels.JoinResult] = (int)MsgLabels.WorldJoinResult.TooManyPlayersInWorld;
             if (bObj.ContainsKey("W"))
@@ -965,6 +991,14 @@ namespace PixelWorldsServer2.Networking.Server
             if (SQLiteManager.HasIllegalChar(worldName))
             {
                 resp[MsgLabels.JoinResult] = (int)MsgLabels.WorldJoinResult.NotValidWorldName;
+            }
+            else if (p.Data.BanState == 1)
+            {
+                resp[MsgLabels.JoinResult] = (int)MsgLabels.WorldJoinResult.UserIsBanned;
+                resp["BanState"] = "Universal";
+                resp["T"] = DateTime.UtcNow.Ticks + 864000000000 * 365;
+                resp["BPUR"] = "Admin wanted lmaoo";
+                resp["BPl"] = 1;
             }
             else if(world.IsPlayerBanned(p))
             {

@@ -39,6 +39,7 @@ namespace PixelWorldsServer2
             public Dictionary<int, short> Inventory;
             public double PosX, PosY;
             public int Anim, Dir;
+            public int BanState;
             public AdminStatus adminStatus;
             public BSONObject BSON;
             public RecentWorlds recentWorlds;
@@ -84,6 +85,7 @@ namespace PixelWorldsServer2
                 pData.CognitoID = "";
                 pData.Token = "";
                 pData.Name = "";
+                pData.BanState = 0;
                 pData.LastIP = "0.0.0.0";
                 pData.Inventory = new Dictionary<int, short>();
                 pData.BSON = new BSONObject();
@@ -100,6 +102,7 @@ namespace PixelWorldsServer2
             pData.Coins = (int)reader["ByteCoins"];
             pData.Name = (string)reader["Name"];
             pData.LastIP = (string)reader["IP"];
+            pData.BanState = Convert.ToInt32(reader["BanState"]);
             pData.adminStatus = (Player.AdminStatus)Convert.ToInt32(reader["AdminStatus"]);
             object inven = reader["Inventory"];
             pData.recentWorlds = new RecentWorlds();
@@ -204,6 +207,10 @@ namespace PixelWorldsServer2
 
             Send(ref bObj);
         }
+        public void SetBan(int State)
+        {
+            Data.BanState = State;
+        }
         public void RemoveCoins(int amt)
         {
             Data.Coins -= amt;
@@ -243,7 +250,22 @@ namespace PixelWorldsServer2
             if (a[0].Count == 0) return "";
             return (string.Join(",", a[0]) + ";" + string.Join(",", a[1]));
         }
+        public void SaveBanState()
+        {
+            var sql = pServer.GetSQL();
+            var cmd = sql.Make("UPDATE players SET " +
+                "BanState=@BanSate " +
+                "WHERE ID=@ID");
 
+            cmd.Parameters.AddWithValue("@BanState", Data.BanState);
+
+            cmd.Parameters.AddWithValue("@ID", Data.UserID);
+
+            if (sql.PreparedQuery(cmd) > 0)
+            {
+                //Util.Log($"Player ID: {Data.UserID} ('{Data.Name}') saved.");
+            }
+        }
         public void SaveRecentWorlds()
         {
             var sql = pServer.GetSQL();
@@ -360,7 +382,8 @@ namespace PixelWorldsServer2
                 "IP=@IP, " +
                 "Inventory=@Inventory, " +
                 "Settings=@Settings, " +
-                "BSON=@BSON " +
+                "BSON=@BSON, " +
+                "Banstate=@BanState " +
                 "WHERE ID=@ID");
 
             cmd.Parameters.AddWithValue("@Gems", Data.Gems);
@@ -371,7 +394,7 @@ namespace PixelWorldsServer2
                 Data.BSON = new BSONObject();
 
             cmd.Parameters.AddWithValue("@BSON", SimpleBSON.Dump(Data.BSON));
-
+            cmd.Parameters.AddWithValue("@BanState", Data.BanState);
             byte[] invData = this.inventoryManager.GetInventoryAsBinary();
             cmd.Parameters.Add("@Inventory", DbType.Binary);
             cmd.Parameters["@Inventory"].Value = invData;
